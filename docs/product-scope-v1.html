@@ -1,0 +1,1458 @@
+<title>Cert Study Copilot Scope</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#F1F4F3; --surface:#FFFFFF; --surface-2:#E8EEEC;
+  --ink:#111819; --ink-2:#38474A; --muted:#65787A;
+  --line:#D2DBD9; --line-strong:#B4C2BF;
+  --accent:#0E5A63; --accent-soft:#DBEBEC; --accent-ink:#0B4249;
+  --on-accent:#FFFFFF;
+  --signal:#8F5405; --signal-soft:#F7E9D1;
+  --good:#2B6D48; --good-soft:#DBEADF;
+  --bad:#943321; --bad-soft:#F3DFDA;
+  --defer:#56606B; --defer-soft:#E3E7EA;
+  --shadow:0 1px 2px rgba(17,24,25,.05), 0 8px 24px -16px rgba(17,24,25,.25);
+  --sans:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+    --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+    --line:#233032; --line-strong:#324446;
+    --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+    --on-accent:#08191B;
+    --signal:#E0A855; --signal-soft:#2E2310;
+    --good:#68BE8A; --good-soft:#12271B;
+    --bad:#DF8570; --bad-soft:#2C1611;
+    --defer:#98A4AF; --defer-soft:#1C2226;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+  --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+  --line:#233032; --line-strong:#324446;
+  --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+  --on-accent:#08191B;
+  --signal:#E0A855; --signal-soft:#2E2310;
+  --good:#68BE8A; --good-soft:#12271B;
+  --bad:#DF8570; --bad-soft:#2C1611;
+  --defer:#98A4AF; --defer-soft:#1C2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-soft);color:var(--accent-ink)}
+a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.masthead{border-bottom:1px solid var(--line-strong);background:var(--surface)}
+.masthead-in{max-width:1240px;margin:0 auto;padding:34px 28px 26px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.eyebrow b{color:var(--signal);font-weight:500}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.06;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance;max-width:20ch}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:64ch;margin:0 0 24px}
+.meta{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);padding-top:16px;margin:0}
+.meta div{padding-right:30px;margin-right:30px;border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0;margin-right:0;padding-right:0}
+.meta dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+.meta dd{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:0}
+.meta dd.hold{color:var(--signal)}
+
+.shell{max-width:1240px;margin:0 auto;padding:0 28px 120px;display:grid;grid-template-columns:236px minmax(0,1fr);gap:56px;align-items:start}
+nav.toc{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:36px 0 40px;font-family:var(--sans);font-size:13.5px;line-height:1.4}
+nav.toc h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:22px 0 9px}
+nav.toc h2:first-child{margin-top:0}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 8px 4px 9px;color:var(--ink-2);text-decoration:none;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--accent)}
+nav.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+nav.toc a span{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:1px}
+nav.toc a.on span{color:var(--accent)}
+main{padding:44px 0 0;min-width:0}
+
+section{padding-top:14px;margin-bottom:52px;scroll-margin-top:20px}
+.part{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);display:inline-block;padding:5px 11px;margin:46px 0 26px;border-radius:2px}
+main > .part:first-child{margin-top:0}
+h2.sec{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:-.015em;line-height:1.18;margin:0 0 6px;text-wrap:balance;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+h2.sec i{font-family:var(--mono);font-style:normal;font-size:13px;font-weight:500;color:var(--accent);letter-spacing:0}
+.kicker{font-family:var(--sans);font-size:14px;color:var(--muted);margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line);max-width:none}
+h3{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-.008em;margin:30px 0 8px;text-wrap:balance}
+h4{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:22px 0 6px;color:var(--ink)}
+p{margin:0 0 14px;max-width:70ch}
+ul,ol.body{margin:0 0 14px;padding-left:22px;max-width:70ch}
+li{margin-bottom:5px}
+li::marker{color:var(--muted)}
+strong{font-weight:600}
+em{font-style:italic;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);padding:1.5px 5px;border-radius:3px;color:var(--ink)}
+
+.flow{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;padding:16px 18px;overflow-x:auto;margin:0 0 18px;color:var(--ink-2);white-space:pre}
+.callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;margin:0 0 18px;border-radius:0 3px 3px 0;max-width:76ch}
+.callout p{margin:0 0 8px;max-width:none}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.callout ul{max-width:none}
+.callout .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:6px;font-weight:500}
+.callout.rule{border-left-color:var(--accent);background:var(--accent-soft)}
+.callout.rule .lab{color:var(--accent-ink)}
+.callout.stop{border-left-color:var(--bad);background:var(--bad-soft)}
+.callout.stop .lab{color:var(--bad)}
+
+.chip{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2.5px 7px;border-radius:3px;white-space:nowrap;display:inline-block;vertical-align:.08em}
+.c-must{background:var(--good-soft);color:var(--good)}
+.c-should{background:var(--accent-soft);color:var(--accent-ink)}
+.c-could{background:var(--defer-soft);color:var(--defer)}
+.c-wont,.c-cut{background:var(--bad-soft);color:var(--bad)}
+.c-ai{background:var(--signal-soft);color:var(--signal)}
+.c-det{background:var(--accent-soft);color:var(--accent-ink)}
+
+.wide{max-width:none;overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13.5px;line-height:1.45}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:11px 13px;border-bottom:1px solid var(--line-strong);vertical-align:bottom;background:var(--surface-2);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+td.k{color:var(--ink);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-family:var(--mono);font-size:12px}
+td.tight,th.tight{white-space:nowrap}
+.sev{font-family:var(--mono);font-size:11px;font-weight:700}
+.sev.hi{color:var(--bad)}.sev.md{color:var(--signal)}.sev.lo{color:var(--good)}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin:0 0 20px;max-width:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px}
+.card h4{margin:0 0 8px}
+.card p,.card ul{max-width:none}
+.card p:last-child,.card ul:last-child{margin-bottom:0}
+.card.is{border-top:3px solid var(--good)}
+.card.isnot{border-top:3px solid var(--bad)}
+.card ul{padding-left:18px;font-size:15px}
+
+.vp{border-top:1px solid var(--line-strong);padding:18px 0 4px;display:grid;grid-template-columns:66px 1fr;gap:20px;max-width:none}
+.vp .n{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;font-weight:700;padding-top:5px}
+.vp h4{margin:0 0 6px;font-size:17px}
+.vp p{max-width:66ch}
+.vp p:last-child{margin-bottom:0}
+
+.gate{border:2px solid var(--accent);border-radius:4px;background:var(--surface);padding:0;margin:36px 0 0;max-width:none;box-shadow:var(--shadow)}
+.gate-hd{background:var(--accent);color:var(--on-accent);padding:14px 22px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gate-bd{padding:24px 26px}
+.gate-bd dl{margin:0;display:grid;grid-template-columns:186px 1fr;gap:0}
+.gate-bd dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:13px 0;border-top:1px solid var(--line)}
+.gate-bd dd{margin:0;padding:13px 0;border-top:1px solid var(--line);font-size:15.5px}
+.gate-bd dt:first-of-type,.gate-bd dt:first-of-type + dd{border-top:0}
+.gate-bd dd ul{margin:0;padding-left:19px;max-width:none}
+.gate-bd dd p{max-width:none;margin:0 0 8px}
+.gate-bd dd p:last-child{margin:0}
+.verdict{font-family:var(--sans);font-weight:700;font-size:17px;color:var(--good)}
+.verdict.cond{color:var(--signal)}
+
+.foot{max-width:70ch;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;margin-top:44px}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:0;padding:0 20px 80px}
+  nav.toc{position:static;max-height:none;padding:24px 0 20px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0}
+  .masthead-in{padding:26px 20px 22px}
+  .meta div{border-right:0;padding-right:0;margin-right:24px;margin-bottom:10px}
+  .gate-bd dl{grid-template-columns:1fr}
+  .gate-bd dt{padding-bottom:0}
+  .gate-bd dd{padding-top:4px;border-top:0}
+  .gate-bd dt:first-of-type + dd{border-top:0}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="eyebrow">Stage 1 · Product Discovery &amp; Scope · <b>Đã qua Stage Gate 1 → Stage 2</b></p>
+    <h1>Cert Study Copilot — Product Scope v1</h1>
+    <p class="standfirst">Biến một chứng chỉ, một ngày thi và bộ slide người học đang có thành chương trình học tiếng Việt theo ngày — có kiểm tra, có phát hiện điểm yếu, và tự điều chỉnh lịch khi học trễ.</p>
+    <dl class="meta">
+      <div><dt>Reference use case</dt><dd>AWS AIF-C01</dd></div>
+      <div><dt>Stage</dt><dd>Product Scope v1</dd></div>
+      <div><dt>Trạng thái</dt><dd>Đã chốt · D1–D7 locked</dd></div>
+      <div><dt>Chưa bao gồm</dt><dd>Architecture · Code</dd></div>
+      <div><dt>Cập nhật</dt><dd>30 · 08 · 2026</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="shell">
+<nav class="toc" aria-label="Mục lục">
+  <h2>I · Sản phẩm</h2>
+  <ol>
+    <li><a href="#s1"><span>01</span>Problem Statement</a></li>
+    <li><a href="#s2"><span>02</span>Primary User</a></li>
+    <li><a href="#s3"><span>03</span>Secondary Users</a></li>
+    <li><a href="#s4"><span>04</span>Value Proposition</a></li>
+    <li><a href="#s5"><span>05</span>Product Thesis</a></li>
+    <li><a href="#s6"><span>06</span>Product Boundaries</a></li>
+  </ol>
+  <h2>II · Phạm vi</h2>
+  <ol>
+    <li><a href="#s7"><span>07</span>Canonical Core Flow</a></li>
+    <li><a href="#s8"><span>08</span>Material-driven Flow</a></li>
+    <li><a href="#s9"><span>09</span>Cert Discovery</a></li>
+    <li><a href="#s10"><span>10</span>Course Analysis</a></li>
+    <li><a href="#s11"><span>11</span>Exam Mapping</a></li>
+    <li><a href="#s12"><span>12</span>Daily Learning</a></li>
+    <li><a href="#s13"><span>13</span>Quiz Scope</a></li>
+    <li><a href="#s14"><span>14</span>Progress Scope</a></li>
+    <li><a href="#s15"><span>15</span>Adaptive Planning</a></li>
+    <li><a href="#s16"><span>16</span>Document Scope</a></li>
+  </ol>
+  <h2>III · Thế trận kỹ thuật</h2>
+  <ol>
+    <li><a href="#s17"><span>17</span>RAG Decision</a></li>
+    <li><a href="#s18"><span>18</span>Search Scope</a></li>
+    <li><a href="#s19"><span>19</span>AI Responsibilities</a></li>
+    <li><a href="#s20"><span>20</span>Deterministic Rules</a></li>
+    <li><a href="#s21"><span>21</span>Source Priority</a></li>
+    <li><a href="#s22"><span>22</span>Data Ownership</a></li>
+  </ol>
+  <h2>IV · Giao hàng</h2>
+  <ol>
+    <li><a href="#s23"><span>23</span>Web MVP Screens</a></li>
+    <li><a href="#s24"><span>24</span>Mobile Future</a></li>
+    <li><a href="#s25"><span>25</span>Feature Audit</a></li>
+    <li><a href="#s26"><span>26</span>Product Risks</a></li>
+    <li><a href="#s27"><span>27</span>Success Criteria</a></li>
+  </ol>
+  <h2>V · Chốt</h2>
+  <ol>
+    <li><a href="#s28"><span>28</span>AIF-C01 Walkthrough</a></li>
+    <li><a href="#s29"><span>29</span>Open Questions</a></li>
+    <li><a href="#s30"><span>30</span>Decisions Required</a></li>
+    <li><a href="#gate"><span>◆</span>Stage Gate 1</a></li>
+  </ol>
+</nav>
+
+<main>
+<span class="part">Phần I — Sản phẩm này là gì</span>
+
+<section id="s1">
+<h2 class="sec"><i>01</i>Problem Statement</h2>
+<p class="kicker">Khoảng cách giữa "tôi có tài liệu" và "hôm nay tôi học gì" hiện đang được lấp bằng lao động thủ công.</p>
+
+<p>Người tự học certification không thiếu nội dung. Họ thiếu <strong>một hệ điều hành cho việc học</strong>. Ngày hôm nay của họ trông như sau: mở Udemy, không nhớ hôm qua dừng ở đâu, tua lại 10 phút, gặp một thuật ngữ tiếng Anh lạ, mở tab ChatGPT hỏi, lạc 20 phút, đóng máy, không biết mình đã tiến bộ hay chưa.</p>
+
+<p>Tách ra thành các pain point cụ thể, có thể quan sát được:</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Pain point</th><th>Biểu hiện thực tế</th><th class="tight">Tần suất</th><th class="tight">Mức đau</th></tr></thead>
+<tbody>
+<tr><td class="k">Chi phí lập kế hoạch cao</td><td>Để biết "hôm nay học bao nhiêu" phải biết khối lượng tài liệu × số ngày còn lại × trọng số domain. Không ai tính. Kết quả: hoặc kế hoạch phi thực tế, hoặc không có kế hoạch.</td><td class="tight">1 lần / kỳ thi</td><td><span class="sev hi">Cao</span></td></tr>
+<tr><td class="k">Kế hoạch chết khi va chạm thực tế</td><td>Nghỉ 3 ngày → lịch sai toàn bộ → phải lập lại thủ công → bỏ luôn kế hoạch → nhồi trong tuần cuối. Đây là failure mode phổ biến nhất.</td><td class="tight">Liên tục</td><td><span class="sev hi">Cao</span></td></tr>
+<tr><td class="k">Ma sát ngôn ngữ</td><td>Đọc slide tiếng Anh với tốc độ ~50% tiếng mẹ đẻ, và hiểu sắc thái thấp hơn nhiều. Mệt nhanh, dễ bỏ.</td><td class="tight">Mỗi buổi</td><td><span class="sev hi">Cao</span></td></tr>
+<tr><td class="k">Slide không phải là tài liệu học</td><td>Slide của một khóa video là <em>phương tiện hỗ trợ giảng viên nói</em>. Đọc slide không có giọng giảng = mất 60% nội dung. Người học phải tự tái tạo bài giảng đã mất.</td><td class="tight">Mỗi buổi</td><td><span class="sev hi">Cao</span></td></tr>
+<tr><td class="k">Thuế tra từ khoá</td><td>Mỗi thuật ngữ lạ là một lần chuyển ngữ cảnh sang Google/ChatGPT. Mỗi lần chuyển làm gãy dòng tập trung ~10–15 phút.</td><td class="tight">10–30 lần/buổi</td><td><span class="sev md">Trung bình</span></td></tr>
+<tr><td class="k">Không có tín hiệu phản hồi</td><td>Không biết mình đã hiểu hay chỉ tưởng là hiểu. Practice exam thì dồn vào tuần cuối — quá muộn để thay đổi cách học.</td><td class="tight">Suốt kỳ</td><td><span class="sev hi">Cao</span></td></tr>
+<tr><td class="k">Lo lắng về độ phủ</td><td>"Khóa này có đủ để đi thi không?" Exam guide là một PDF không ai đọc. Không có cách nào biết ngoài việc thi trượt.</td><td class="tight">1 lần, dai dẳng</td><td><span class="sev md">Trung bình</span></td></tr>
+<tr><td class="k">ChatGPT không có trí nhớ về việc học</td><td>Mỗi cuộc chat bắt đầu lại từ đầu. Không có mô hình "tôi đã học gì, yếu gì, còn gì". Người dùng phải tự làm bộ nhớ cho AI.</td><td class="tight">Mỗi buổi</td><td><span class="sev hi">Cao</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+<span class="lab">Challenge — pain nào thật sự đáng trả tiền</span>
+<p>Không phải cả 8 cái đều là động cơ giữ chân người dùng. Chia làm hai loại:</p>
+<ul>
+<li><strong>Pain lặp lại hằng ngày</strong> (lập lịch lại, ngôn ngữ, slide thiếu giảng, thuế từ khoá, không có phản hồi) → đây là nơi sản phẩm sống.</li>
+<li><strong>Pain một lần</strong> (độ phủ khóa học, tìm exam guide) → cảm giác giá trị rất cao lúc onboarding nhưng <em>không giữ chân ai</em>. Coverage gap là feature gây ấn tượng, không phải feature giữ người.</li>
+</ul>
+<p>Hệ quả cho scope: coverage analysis vẫn phải làm, nhưng lý do là <strong>planner cần biết topic nào không có tài liệu để xếp lịch</strong> — không phải vì nó là một tính năng bán hàng. Nó là sản phẩm phụ của việc mapping, không phải một hạng mục riêng.</p>
+</div>
+</section>
+
+<section id="s2">
+<h2 class="sec"><i>02</i>Primary User</h2>
+<p class="kicker">Một chân dung hẹp. Hẹp là cố ý.</p>
+
+<p><strong>Kỹ sư IT người Việt đi làm, đang tự học một chứng chỉ cloud/IT, có ngày thi cụ thể trong 3–12 tuần tới, và đã sở hữu một khóa học hoặc bộ slide.</strong></p>
+
+<div class="grid2">
+<div class="card">
+<h4>Đặc điểm định tính</h4>
+<ul>
+<li>22–35 tuổi, developer / cloud / infra / QA / BA đang chuyển sang tech</li>
+<li>Làm full-time; học 1–4h/ngày, thời gian rời rạc (tối, cuối tuần)</li>
+<li>Tiếng Anh <em>đọc được nhưng mệt</em> — không phải không biết, mà là chậm và tốn năng lượng</li>
+<li>Đã mua khóa Udemy / A Cloud Guru / có slide PDF của công ty</li>
+<li>Áp lực thật: thăng cấp, yêu cầu partner-tier của công ty, hoặc chuyển việc</li>
+</ul>
+</div>
+<div class="card">
+<h4>Ba điều kiện xác định (qualifying traits)</h4>
+<p>Người dùng chỉ là primary user khi thỏa <strong>cả ba</strong>:</p>
+<ul>
+<li><strong>Có deadline</strong> — đã hoặc sắp đặt lịch thi</li>
+<li><strong>Có tài liệu</strong> — đang học bằng một khóa cụ thể</li>
+<li><strong>Tiếng Anh là thuế</strong> — không phải rào cản tuyệt đối, mà là chi phí</li>
+</ul>
+<p>Thiếu một trong ba, sản phẩm tụt xuống mức "ChatGPT làm được".</p>
+</div>
+</div>
+
+<div class="callout">
+<span class="lab">Quyết định scope quan trọng</span>
+<p><strong>MVP bắt buộc phải upload tài liệu.</strong> Không có tài liệu → hệ thống chỉ sinh được roadmap chung chung → đó chính xác là thứ ChatGPT làm miễn phí trong 30 giây. Cho phép "tạo plan không cần tài liệu" nghe có vẻ thân thiện, nhưng nó làm loãng chính luận điểm của sản phẩm và tạo ra một nhóm người dùng nhận giá trị thấp rồi rời đi, làm nhiễu mọi số liệu validation.</p>
+<p><em>Đánh đổi:</em> tăng ma sát onboarding, giảm TAM. Chấp nhận. Đổi lại là một sản phẩm có lý do tồn tại.</p>
+</div>
+</section>
+
+<section id="s3">
+<h2 class="sec"><i>03</i>Secondary Users</h2>
+<p class="kicker">Biết họ tồn tại để không thiết kế chặn đường họ — nhưng không phục vụ họ bây giờ.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Nhóm</th><th>Vì sao hấp dẫn</th><th>Vì sao không phải bây giờ</th><th class="tight">Sớm nhất</th></tr></thead>
+<tbody>
+<tr><td class="k">Sinh viên / fresher học AWS CLF, SAA</td><td>Số lượng lớn, cùng ngôn ngữ, cùng nỗi đau</td><td>Ít khi có deadline thật và ít khi mua khóa học → thiếu 2/3 qualifying trait</td><td class="tight">v1.2</td></tr>
+<tr><td class="k">Người học không nói tiếng Việt (ID, TH, JP)</td><td>Cơ chế "học bằng tiếng mẹ đẻ" generalize gần như nguyên vẹn</td><td>Thêm một biến vào mọi thử nghiệm chất lượng nội dung khi chất lượng tiếng Việt còn chưa chứng minh</td><td class="tight">v2</td></tr>
+<tr><td class="k">L&amp;D / team lead của công ty outsourcing</td><td>Ngân sách thật. Công ty Việt đẩy chứng chỉ AWS/Azure để đạt partner tier. Người trả tiền ≠ người học.</td><td>Cần multi-user, team dashboard, báo cáo — một trục dữ liệu hoàn toàn khác. Nhưng <strong>quyết định sớm ảnh hưởng data model</strong> → xem D9.</td><td class="tight">v2</td></tr>
+<tr><td class="k">Mentor / tác giả nội dung đóng gói lộ trình</td><td>Cung cấp nội dung, tạo hiệu ứng mạng</td><td>Kéo sản phẩm về phía marketplace/LMS — vi phạm ranh giới ở mục 06</td><td class="tight">Chưa hẹn</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="s4">
+<h2 class="sec"><i>04</i>Core Value Proposition</h2>
+<p class="kicker">Câu hỏi phải trả lời thẳng: vì sao không dùng ChatGPT + Google + Notion + Udemy?</p>
+
+<p>ChatGPT <em>có thể</em> dịch một slide, giải thích một keyword, ra một đề quiz, thậm chí soạn một lộ trình 30 ngày. Nếu định vị sản phẩm là "AI sinh nội dung học", chúng ta thua ngay từ ngày đầu. Khác biệt phải nằm ở chỗ ChatGPT <strong>về mặt cấu trúc</strong> không làm được.</p>
+
+<div class="vp">
+<div class="n">VP 01</div>
+<div>
+<h4>Trạng thái liên tục, không phải một lần sinh nội dung</h4>
+<p>ChatGPT không có lịch, không có bộ nhớ về việc bạn đã hoàn thành ngày 4 và sai 55% câu về RAG, không có ràng buộc "không được xếp lịch sau ngày thi". Mỗi ngày người dùng phải tự dựng lại toàn bộ ngữ cảnh. Ở đây, <strong>lịch là một đối tượng sống, có trạng thái, tự sửa</strong> — và toán về ngày/giờ/sức chứa do code quyết định, không phải do model đoán.</p>
+</div>
+</div>
+
+<div class="vp">
+<div class="n">VP 02</div>
+<div>
+<h4>Tài liệu của bạn là xương sống, không phải phụ lục</h4>
+<p>Không ai chịu upload lại 400 slide và viết lại prompt mỗi ngày. Ở đây tài liệu được phân tích một lần, dựng thành cấu trúc có trang/slide range, gắn với exam blueprint, rồi trở thành nguồn của mọi bài giảng và mọi câu hỏi — <strong>mỗi ngày trong nhiều tuần</strong>. Nội dung ngày 9 truy vết được về slide 146–200 của đúng file bạn đã upload.</p>
+</div>
+</div>
+
+<div class="vp">
+<div class="n">VP 03</div>
+<div>
+<h4>Không phải ra quyết định nào để bắt đầu học</h4>
+<p>Việc khó nhất của tự học không phải là học, mà là <em>quyết định học gì</em>. ChatGPT yêu cầu bạn biết phải hỏi gì. Ở đây: mở app → hôm nay đã được định nghĩa sẵn → 3.5 giờ nội dung đã chuẩn bị xong → quiz → xong. Đây là thứ đắt nhất mà sản phẩm bán: <strong>gỡ bỏ gánh nặng executive function</strong>.</p>
+</div>
+</div>
+
+<div class="callout">
+<span class="lab">Challenge — điều nguy hiểm nhất về định vị</span>
+<p><strong>Kế hoạch là cái móc câu; bài học hằng ngày mới là sản phẩm.</strong> Nếu kế hoạch <em>là</em> sản phẩm, chúng ta chỉ là một cái to-do list biết chia trang, và mọi study planner đều chết ở chỗ đó: người dùng sinh plan một lần, thấy hay, rồi không quay lại.</p>
+<p>Chỉ số duy nhất chứng minh sản phẩm sống là: <strong>người hoàn thành Ngày 1 có quay lại hoàn thành Ngày 2 không.</strong> Mọi thứ khác trong tài liệu này là phương tiện cho câu hỏi đó.</p>
+</div>
+
+<h3>Value proposition bị loại</h3>
+<p>Ba thứ nghe hay nhưng không đủ mạnh để làm trụ, đã bị hạ cấp trong scope này:</p>
+<ul>
+<li><strong>"AI tự tìm tài liệu bù lỗ hổng trên web"</strong> — ấn tượng khi demo, giá trị hằng ngày thấp, rủi ro sai cao. Hạ xuống: phát hiện lỗ hổng + link tài liệu chính thức có sẵn trong catalog.</li>
+<li><strong>"Tự động khám phá mọi certification trên internet"</strong> — với 1–3 chứng chỉ đầu, curate thủ công vừa rẻ hơn vừa <em>chính xác hơn</em>. Xem mục 09.</li>
+<li><strong>"Dự đoán xác suất đậu"</strong> — <span class="chip c-wont">Loại</span> Không có cơ sở thống kê, không thể kiểm chứng, và sai một lần là mất toàn bộ uy tín. Loại vĩnh viễn khỏi roadmap.</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2 class="sec"><i>05</i>Core Product Thesis</h2>
+
+<div class="callout rule">
+<span class="lab">Luận điểm sản phẩm</span>
+<p style="font-size:18px"><strong>Exam guide quyết định <em>học gì</em>. Tài liệu của người dùng quyết định <em>học theo trình tự nào và mất bao nhiêu công</em>. Code quyết định <em>ngày nào học phần nào</em>. AI chỉ làm một việc: biến khối tài liệu tiếng Anh của hôm nay thành một buổi học tiếng Việt hiểu được, và kiểm tra xem đã hiểu thật chưa.</strong></p>
+</div>
+
+<p>Đây là một sự phân công quyền lực, không phải một danh sách tính năng. Mỗi lần có tranh cãi về scope sau này, quay lại bốn vế trên để phân xử. Cụ thể hoá:</p>
+
+<div class="flow">Exam Guide (official)     →  CÁI GÌ phải biết        →  bất biến, có provenance
+Primary Course (user)     →  TRÌNH TỰ và KHỐI LƯỢNG  →  xương sống của lịch
+Deterministic Planner     →  NGÀY NÀO, BAO LÂU       →  không bao giờ giao cho LLM
+AI Layer                  →  HIỂU ĐƯỢC và KIỂM TRA   →  luôn grounded, luôn gắn nhãn</div>
+
+<p>Hệ quả trực tiếp, dùng làm test cho mọi feature đề xuất về sau:</p>
+<ul>
+<li>Nếu một feature không phục vụ một trong bốn vế trên → nó không thuộc về sản phẩm này.</li>
+<li>Nếu một feature khiến LLM chạm vào ràng buộc lịch/điểm/trạng thái → nó bị thiết kế sai.</li>
+<li>Nếu một feature hoạt động tốt như nhau khi <em>không</em> có tài liệu người dùng → nó không phải lợi thế của chúng ta.</li>
+</ul>
+</section>
+
+<section id="s6">
+<h2 class="sec"><i>06</i>Product Boundaries</h2>
+<p class="kicker">Ranh giới là công cụ chống phình scope mạnh nhất trong tài liệu này.</p>
+
+<div class="grid2">
+<div class="card is">
+<h4>Sản phẩm LÀ</h4>
+<ul>
+<li><strong>Material-driven study planner</strong> — lịch học sinh ra từ khối lượng tài liệu thật, không phải template</li>
+<li><strong>Deadline-driven scheduler</strong> — ngày thi là ràng buộc cứng, không phải gợi ý</li>
+<li><strong>Lớp học tiếng Việt phủ lên tài liệu tiếng Anh</strong> — diễn giải có ngữ cảnh bài thi, không phải bản dịch</li>
+<li><strong>Vòng phản hồi khép kín</strong> — quiz → điểm yếu → lịch ngày mai thay đổi</li>
+<li><strong>Một người học, một mục tiêu</strong> — MVP: đúng một active plan mỗi tài khoản</li>
+</ul>
+</div>
+<div class="card isnot">
+<h4>Sản phẩm KHÔNG PHẢI</h4>
+<ul>
+<li><strong>Udemy clone</strong> — không host, không bán, không phân phối khóa học</li>
+<li><strong>LMS</strong> — không org, cohort, giảng viên, bài tập, chấm điểm, SCORM</li>
+<li><strong>ChatGPT wrapper</strong> — MVP không có ô chat tự do</li>
+<li><strong>Document management</strong> — không folder, không share, không versioning</li>
+<li><strong>Search engine</strong></li>
+<li><strong>Exam dump site</strong> — từ chối ingest, từ chối sinh "đề thi thật"</li>
+<li><strong>Nền tảng thi cử / proctoring</strong></li>
+<li><strong>Notion / Anki competitor</strong> — không ghi chú tự do, không SRS engine trong MVP</li>
+<li><strong>Nền tảng xuất bản</strong> — nội dung sinh ra là riêng tư của người upload</li>
+</ul>
+</div>
+</div>
+
+<h3>Hai ranh giới bổ sung, không có trong brief gốc</h3>
+<ul>
+<li><strong>Một active plan mỗi user trong MVP.</strong> Học song song hai chứng chỉ đòi hỏi chia sẻ capacity giữa các plan — một hệ số nhân độ phức tạp cho gần như không giá trị MVP.</li>
+<li><strong>Không tuyên bố liên kết chính thức và không hứa đậu.</strong> Mọi nội dung sinh ra mang nhãn nguồn gốc. Không có câu nào trong sản phẩm được phép ngụ ý đây là tài liệu của AWS/Microsoft/Google.</li>
+</ul>
+</section>
+
+<span class="part">Phần II — Phạm vi từng vùng chức năng</span>
+
+<section id="s7">
+<h2 class="sec"><i>07</i>Canonical Core User Flow</h2>
+<p class="kicker">Flow trong brief đúng về thứ tự logic nhưng sai về thứ tự trải nghiệm. Dưới đây là bản đã sửa, kèm lý do.</p>
+
+<h3>Bốn vấn đề của flow đề xuất</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Vấn đề</th><th>Sửa</th></tr></thead>
+<tbody>
+<tr><td class="k">1</td><td><strong>Thời gian tới giá trị đầu tiên quá dài.</strong> Upload 400 slide → parse → extract → map → plan. Người dùng mới nhìn spinner nhiều phút ở lần dùng đầu tiên. Đây là nơi mất người nhiều nhất.</td><td>Chia giá trị làm hai tầng. <strong>Tức thì (&lt;10 giây):</strong> ngay khi có cert + ngày thi + giờ/ngày, hiện <em>Capacity Reality Check</em> — hoàn toàn deterministic, hoàn toàn thật. <strong>Trễ (async):</strong> plan đầy đủ, với màn hình chờ hiển thị tên các section được trích xuất hiện dần — người dùng <em>thấy</em> hệ thống đang đọc deck của mình.</td></tr>
+<tr><td class="k">2</td><td><strong>"Understand Exam Scope" không phải một bước của người dùng.</strong> Với catalog đã curate, exam scope có sẵn tức thì.</td><td>Xoá khỏi flow người dùng. Nó là dữ liệu, không phải bước.</td></tr>
+<tr><td class="k">3</td><td><strong>Thiếu điểm xác nhận kế hoạch.</strong> Nếu hệ thống ném ra 42 ngày và người dùng nghĩ "tôi biết ML cơ bản rồi", họ sẽ bỏ plan chứ không sửa.</td><td>Thêm bước <em>Plan Review</em> nhẹ với đúng hai đòn bẩy: (a) tick những phần đã biết, (b) đổi ngày bắt đầu. Không làm full editor.</td></tr>
+<tr><td class="k">4</td><td><strong>"Trình độ hiện tại" hỏi sai lúc và sai cách.</strong> Hỏi "bạn ở mức nào?" lúc onboarding cho tín hiệu nhiễu và người dùng tự đánh giá kém.</td><td>Hỏi <em>sau</em> khi phân tích xong, bằng chính tên section thật của khóa học: "Phần nào bạn đã biết?" — cụ thể, dễ trả lời, và grounded. <span class="chip c-cut">Bỏ self-reported skill level</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Setup loop — một lần cho mỗi plan</h3>
+<div class="flow">Đăng nhập
+   ↓
+Chọn certification (từ catalog)                    [deterministic]
+   ↓
+Ngày thi + giờ rảnh theo thứ + ngày nghỉ           [deterministic]
+   ↓
+◆ CAPACITY REALITY CHECK  ← giá trị đầu tiên, &lt;10s [deterministic]
+   "11 ngày × 4h = 44h. Khoá này ước tính 46h.
+    Bạn sẽ cần ưu tiên. Xem hệ thống đề xuất bỏ gì."
+   ↓
+Upload Primary Course (PDF / PPTX)
+   ↓
+▸ ASYNC JOB — người dùng thấy tiến trình theo section
+   parse → cấu trúc → map vào exam blueprint → coverage matrix
+   ↓
+Plan Review: tick phần đã biết · xem lỗ hổng · xác nhận
+   ↓
+Sinh lịch theo ngày                                [deterministic]
+   ↓
+▸ Pre-generate Learning Pack của Ngày 1 ngay lập tức</div>
+
+<h3>Daily loop — đây mới là sản phẩm</h3>
+<div class="flow">Mở app  →  màn hình "Hôm nay" (không có dashboard trung gian)
+   ↓
+Warm-up: 3 câu từ những ngày trước         [chọn deterministic từ bank]
+   ↓
+Learning Unit 1..n
+   ├─ Mục tiêu hôm nay
+   ├─ Bài giảng tiếng Việt          [AI · grounded vào slide range]
+   ├─ Keyword giải thích tại chỗ    [AI · lọc theo glossary đã có]
+   ├─ Bảng so sánh khi cần          [AI · điều kiện]
+   ├─ Nhãn MUST / SHOULD / GOOD KNOW
+   └─ Panel slide gốc mở cạnh bên   [deterministic · truy vết]
+   ↓
+Quiz 6–10 câu                       [AI · bắt buộc có source span]
+   ↓
+Kết quả + giải thích + vì sao đáp án khác sai
+   ↓
+Cập nhật tiến độ · gắn cờ topic yếu        [deterministic]
+   ↓
+Hoàn thành ngày                            [deterministic]
+   ↓
+Replan nếu cần + xem trước ngày mai        [deterministic]
+   ↓
+▸ Pre-generate Learning Pack ngày kế tiếp</div>
+
+<div class="callout rule">
+<span class="lab">Chi tiết nhỏ, tác động lớn</span>
+<p><strong>Pre-generate ngày kế tiếp.</strong> Sinh Learning Pack của Ngày N+1 ngay khi Ngày N hoàn thành. Người dùng không bao giờ phải chờ AI. Đây là một quyết định sản phẩm có hệ quả kiến trúc (background job, cache, chi phí) — ghi nhận ở đây để Stage 2 xử lý.</p>
+<p><strong>Warm-up review 3 câu.</strong> Không cần SRS engine: chỉ cần chọn deterministic từ bank câu hỏi đã sinh, ưu tiên câu đã trả lời sai. Chi phí gần bằng không, tạo hiệu ứng spaced repetition thật. Nếu cần cắt scope, đây là thứ cắt được — nhưng nên giữ.</p>
+</div>
+
+<h4>Phân loại các bước</h4>
+<div class="wide">
+<table>
+<thead><tr><th>Loại</th><th>Nội dung</th></tr></thead>
+<tbody>
+<tr><td class="k">Trigger</td><td>Có ngày thi cụ thể (hoặc mục tiêu ngày thi) + đang cầm một khóa học</td></tr>
+<tr><td class="k">Required input</td><td>Certification · ngày thi · số giờ/ngày · file Primary Course</td></tr>
+<tr><td class="k">Optional input</td><td>Giờ theo từng thứ · ngày nghỉ · ngày bắt đầu · các phần đã biết</td></tr>
+<tr><td class="k">Derived input</td><td><code>remainingDays</code> · <code>availableDays</code> · <code>dailyCapacity[]</code> · <code>schedulableMinutes</code> · <code>estimatedEffort</code> · <code>effortRatio</code> · <code>reviewWindow</code></td></tr>
+<tr><td class="k">First value moment</td><td>Capacity Reality Check — dưới 10 giây, trước cả khi upload</td></tr>
+<tr><td class="k">Retention loop</td><td>Mở app → Hôm nay → Learning Pack → Quiz → Hoàn thành. Phải mở được trong &lt;5 giây và hoàn thành trong một lượt ngồi.</td></tr>
+<tr><td class="k">Bước đã loại</td><td>"Understand Exam Scope" (là dữ liệu, không phải bước) · "Set Goal" (gộp vào ngày thi + giờ rảnh) · "Analyze Course" và "Map to Exam" (một job async, không phải hai bước với người dùng) · nhập trình độ tự đánh giá</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="s8">
+<h2 class="sec"><i>08</i>Material-driven Learning Flow</h2>
+<p class="kicker">Vòng đời của một file từ lúc upload đến lúc trở thành bài học của Ngày 9.</p>
+
+<div class="flow">FILE (PDF · PPTX)
+   │
+   ├─▸ [DET] Trích text theo trang, font metrics, PDF outline / PPTX section,
+   │         speaker notes, số từ, tỉ lệ diện tích ảnh, page count
+   │
+   ├─▸ [DET] Đề xuất ranh giới section từ tín hiệu cứng
+   │         (bookmark, slide tiêu đề section, mẫu lặp của title)
+   │
+   ├─▸ [AI]  Dựng cấu trúc phân cấp từ bản rút gọn
+   │         (số trang + tiêu đề + N ký tự đầu, gửi theo lô)
+   │         → Section / Subsection / Topic, mỗi cái có pageStart–pageEnd
+   │
+   ├─▸ [DET] VALIDATE: range liên tục · không chồng lấn · phủ hết trang ·
+   │         số trang tồn tại → sai thì retry kèm feedback → cuối cùng
+   │         fallback về outline-only
+   │
+   ├─▸ [AI]  Map Topic → Task Statement của exam blueprint (kèm confidence)
+   │
+   ├─▸ [DET] Coverage matrix = phép trừ tập hợp trên các mapping
+   │         COVERED · PARTIAL · NOT_COVERED · EXTRA
+   │
+   ├─▸ [DET] Ước lượng khối lượng công cho từng Learning Unit
+   │         f(pages, words, imageRatio, difficultyTier, domainWeight)
+   │
+   ├─▸ [DET] CHUẨN HOÁ tổng effort về đúng capacity khả dụng
+   │
+   └─▸ [DET] Xếp lịch → StudyDay[] → StudyUnit[]</div>
+
+<div class="callout rule">
+<span class="lab">Nguyên tắc kiến trúc AI xuyên suốt tài liệu</span>
+<p><strong>AI đề xuất, code kiểm tra.</strong> Mỗi lần LLM sinh cấu trúc, luôn có một tầng validate deterministic phía sau với đường lui rõ ràng. Đây là lý do các bước trên được đánh dấu [AI]/[DET] xen kẽ chứ không phải một pipeline AI liền mạch.</p>
+</div>
+
+<h3>Ước lượng khối lượng — chi tiết vì nó quyết định toàn bộ lịch</h3>
+<p>Đây là phần dễ làm sai nhất và phải hoàn toàn deterministic:</p>
+<div class="flow">baseMinutes   = f(pageCount, wordCount, imageRatio)      ← mô hình tuyến tính, hệ số chỉnh được
+difficultyMul = 0.8 .. 1.4                               ← AI cho tier 1–5, bị chặn biên độ
+weightMul     = f(domainWeight của task statement liên quan)
+overhead      = quiz + review cố định cho mỗi unit
+
+unitEffort    = baseMinutes × difficultyMul × weightMul + overhead
+
+──────────────────────────────────────────────────────────────
+CHUẨN HOÁ (bắt buộc):
+  totalEffort được scale để khớp schedulableMinutes trừ buffer.
+  Không có bước này, ước lượng hoặc thừa hoặc thiếu rất xa.</div>
+<p>AI chỉ được đóng góp đúng một số: <code>difficultyTier</code>, và ảnh hưởng của nó bị chặn ở ±40%. Mọi thứ còn lại là số đếm được từ file.</p>
+</section>
+
+<section id="s9">
+<h2 class="sec"><i>09</i>Certification Discovery Scope</h2>
+<p class="kicker">Đây là chỗ tôi phản đối brief mạnh nhất.</p>
+
+<div class="callout">
+<span class="lab">Challenge — hạ cấp auto-discovery khỏi MVP</span>
+<p>Brief dành hẳn một phase cho việc tự động tìm kiếm và trích xuất thông tin chứng chỉ từ web. Đề xuất: <strong>MVP dùng catalog do người vận hành curate</strong>, với đầy đủ provenance. Lý do:</p>
+<ul>
+<li><strong>Giá trị cho người dùng bằng không</strong> nếu chứng chỉ của họ đã có trong catalog. Auto-discovery giải quyết vấn đề của <em>chúng ta</em> (mở rộng danh mục), không phải của họ.</li>
+<li><strong>Domain weight điều khiển toàn bộ lịch học.</strong> Trích sai 25% thành 15% là hỏng cả kế hoạch, và người dùng không có cách nào phát hiện. Đây là dữ liệu không được phép sai.</li>
+<li><strong>Chi phí curate = ~30 phút / chứng chỉ.</strong> Với 1–3 chứng chỉ đầu, human-in-the-loop vừa rẻ hơn vừa chính xác hơn một pipeline tự động.</li>
+</ul>
+<p><strong>Nhưng data model phải provenance-first ngay từ đầu</strong> để chuyển sang tự động sau này là <em>bổ sung</em> chứ không phải viết lại. Hành vi nhìn từ phía người dùng giống hệt nhau; khác biệt chỉ là ai chạy bước trích xuất.</p>
+</div>
+
+<h3>Mô hình khái niệm (chưa phải schema — đó là việc của Stage 2)</h3>
+<div class="flow">CertificationVersion
+  provider · name · examCode · versionLabel
+  effectiveFrom · retiredAt?
+  officialUrl · examGuideUrl
+  durationMinutes · questionCount · passingScore?   ← nullable, không đoán
+  ├── ExamDomain      (code · title · weightPercent)
+  │     └── TaskStatement (code · title)
+  │           └── KnowledgeSkillItem (text)
+  └── OfficialResource (title · url · loại)
+
+Mọi field factual mang kèm:
+SourceRef { url · docTitle · retrievedAt · contentHash
+            method: MANUAL | AI_EXTRACTED | AI_INFERRED
+            confidence · verifiedBy · verifiedAt }</div>
+
+<h3>Hành vi trong các tình huống khó</h3>
+<div class="wide">
+<table>
+<thead><tr><th>Tình huống</th><th>Hành vi sản phẩm</th></tr></thead>
+<tbody>
+<tr><td class="k">Exam đổi version</td><td>Plan <strong>pin</strong> vào một CertificationVersion cụ thể — không bao giờ tự map lại ngầm. Hiện thông báo: "Exam guide AIF-C01 đã cập nhật ngày X. Kế hoạch của bạn dựa trên bản Y." → [Xem thay đổi] [Cập nhật kế hoạch]. Cập nhật = map lại + hiện diff domain thêm/bớt/đổi trọng số + replan <em>chỉ những ngày còn lại</em>, không bao giờ ghi đè ngày đã hoàn thành.</td></tr>
+<tr><td class="k">Exam guide đổi nhưng cùng version</td><td>Coi là revision. Cùng cơ chế thông báo, diff ở mức task statement. Phát hiện bằng <code>contentHash</code>.</td></tr>
+<tr><td class="k">Passing score không công bố</td><td>Field null. UI hiển thị "Nhà cung cấp không công bố". <strong>Tuyệt đối không để AI điền.</strong></td></tr>
+<tr><td class="k">Khóa học lỗi thời</td><td>So <code>publishedAt</code> của tài liệu với <code>effectiveFrom</code> của exam version. Cảnh báo lúc setup: "Khóa của bạn có vẻ dựa trên phiên bản cũ. Các mục sau có thể thiếu: …"</td></tr>
+<tr><td class="k">Khóa học mâu thuẫn nguồn chính thức</td><td><strong>Nguồn chính thức thắng.</strong> Ghi một bản ghi <code>ContentConflict</code> giữ cả hai nguồn. Hiện callout ngay trong bài giảng: "Slide nói X. Tài liệu chính thức hiện tại nói Y (nguồn). Theo bài thi: Y."</td></tr>
+<tr><td class="k">Provider không có syllabus chi tiết</td><td>Chỉ có domain thô → mapping độ chính xác thấp → nghiêng nhiều hơn vào trình tự khóa học, và <strong>đánh dấu plan là low-precision</strong>. Trong MVP: không nhận loại chứng chỉ này vào catalog.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>MVP catalog:</strong> ra mắt với <em>một</em> chứng chỉ — AWS AIF-C01. Thêm 1–2 chứng chỉ nữa trong tháng đầu (đề xuất: AWS CLF-C02 vì cùng nhà cung cấp và cùng tệp người học; Azure AI-900 để kiểm tra giả định "không hard-code AWS" bằng dữ liệu thật chứ không bằng niềm tin). Chứng chỉ ngoài catalog → form đăng ký chờ, không phải lỗi.</p>
+</section>
+
+<section id="s10">
+<h2 class="sec"><i>10</i>Course Analysis Scope</h2>
+<p class="kicker">Phần kỹ thuật nhiều rủi ro nhất của MVP. Phải trung thực về giới hạn.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Định dạng</th><th>Chất lượng trích xuất</th><th class="tight">MVP</th></tr></thead>
+<tbody>
+<tr><td class="k">PPTX</td><td>Tốt nhất. Có cấu trúc thật: thứ tự slide, title placeholder, body text, section header layout, và <strong>speaker notes</strong> — thường là vàng ròng nếu tác giả có ghi.</td><td><span class="chip c-must">MVP</span></td></tr>
+<tr><td class="k">PDF xuất từ slide</td><td>Tốt. Text theo trang kèm vị trí; suy ra tiêu đề từ cỡ chữ/vị trí; thứ tự slide = thứ tự trang. Có bookmark/outline thì thắng lớn.</td><td><span class="chip c-must">MVP</span></td></tr>
+<tr><td class="k">PDF scan / slide toàn ảnh</td><td>Gần như không trích được text. Cần OCR.</td><td><span class="chip c-wont">Không</span> Phát hiện + cảnh báo trung thực</td></tr>
+<tr><td class="k">Slide nhiều sơ đồ</td><td>Nhãn text đôi khi lấy được; <em>ý nghĩa</em> của sơ đồ thì không. Với deck về AI/ML, đây là vấn đề thật.</td><td><span class="chip c-should">v1.1</span> Vision fallback</td></tr>
+<tr><td class="k">DOCX · MD · TXT · transcript</td><td>Mỗi định dạng là một parser + một heuristic cấu trúc riêng.</td><td><span class="chip c-should">v1.1</span></td></tr>
+<tr><td class="k">Video / transcript từ Udemy</td><td>Giá trị rất cao (transcript có giọng giảng — thứ slide thiếu) nhưng vùng xám về ToS/bản quyền.</td><td><span class="chip c-wont">Loại</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+<span class="lab">Xuống cấp trung thực thay vì im lặng thất bại</span>
+<p>Khi phát hiện trang có mật độ text dưới ngưỡng, nói thẳng với người dùng: <em>"23 trang không trích xuất được nội dung chữ. Chúng vẫn được đưa vào lịch theo đúng vị trí, nhưng bài giảng cho phần này sẽ mỏng hơn — bạn nên xem slide gốc kỹ hơn ở những trang đó."</em></p>
+<p>Đây là lựa chọn sản phẩm, không phải lời xin lỗi kỹ thuật. Một hệ thống thừa nhận giới hạn giữ được lòng tin; một hệ thống bịa nội dung cho slide nó không đọc được thì mất sạch.</p>
+</div>
+
+<h3>Cái gì được phát hiện</h3>
+<p>Đầu ra của phân tích là hai cây riêng biệt, <strong>không bao giờ trộn</strong> (xem thêm mục 22):</p>
+<div class="flow">CourseSection { title · order · pageStart · pageEnd
+                slideCount · wordCount · imageRatio
+                children[] · topics[] }
+
+CourseTopic   { title · pageStart · pageEnd
+                keywords[] · difficultyTier(1–5) · densitySignal }
+
+origin: DERIVED_FROM_MATERIAL   ← luôn phân biệt với ExamBlueprint (OFFICIAL)</div>
+
+<div class="callout">
+<span class="lab">Challenge — bỏ suy luận prerequisite</span>
+<p>Brief đề xuất AI suy ra prerequisite giữa các topic. Đề xuất loại khỏi MVP: <strong>trình tự khóa học <em>chính là</em> đồ thị prerequisite</strong>, và tác giả khóa học đã sắp xếp nó tốt hơn bất kỳ suy luận nào của chúng ta. Nghe hay, trả về ít giá trị, thêm một nguồn sai.</p>
+<p>Ngoại lệ hẹp duy nhất được giữ: khi <em>chèn</em> một topic bù lỗ hổng (không có trong khóa học), AI được hỏi "topic này nên đặt sau phần nào?" — vì lúc đó thực sự không có trình tự nào để dựa vào.</p>
+</div>
+</section>
+
+<section id="s11">
+<h2 class="sec"><i>11</i>Exam Mapping &amp; Coverage Scope</h2>
+
+<h3>Hai cấu trúc, một bảng nối</h3>
+<div class="flow">OFFICIAL (bất biến, có nguồn)          DERIVED (do phân tích tạo ra)
+  Domain                                   CourseSection
+    └ TaskStatement                          └ CourseTopic
+        └ KnowledgeSkillItem                     └ LearningUnit
+
+              ╲                              ╱
+               ╲   TopicExamMapping          ╱
+                ╲  { topicId · taskStatementId
+                     relevance · confidence
+                     rationale · method }</div>
+
+<p><strong>Độ mịn của coverage: task statement.</strong> Domain quá thô để hữu ích; knowledge item quá mịn và nhiễu. Task statement là mức mà exam guide thực sự mô tả hành vi cần có.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Trạng thái</th><th>Điều kiện</th><th>Hành động của hệ thống</th></tr></thead>
+<tbody>
+<tr><td class="k">COVERED</td><td>≥1 topic map tới với confidence ≥ ngưỡng, và đủ khối lượng tài liệu</td><td>Xếp lịch bình thường theo trình tự khóa học</td></tr>
+<tr><td class="k">PARTIAL</td><td>Có map nhưng mỏng (ít trang hoặc confidence thấp)</td><td>Xếp lịch + đánh dấu; bài giảng được phép bổ sung nền tảng, gắn nhãn <code>AI_SUPPLEMENT</code></td></tr>
+<tr><td class="k">NOT_COVERED</td><td>Không có mapping nào vượt ngưỡng</td><td>Chèn một study block riêng: primer tiếng Việt do AI viết + link tài liệu chính thức lấy từ catalog. <strong>Không tìm kiếm web.</strong></td></tr>
+<tr><td class="k">EXTRA</td><td>Topic trong khóa không map tới task statement nào</td><td>Không xoá. Phân loại độ liên quan; khi thiếu thời gian thì hạ ưu tiên trước tiên. Đánh dấu "có thể bỏ nếu thiếu thời gian".</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Coverage ở mức domain = tổng có trọng số của các task statement. Trình bày luôn kèm chữ <em>ước tính</em>: "Khóa học của bạn phủ khoảng 86% phạm vi bài thi (ước tính)" — kèm link tới ma trận chi tiết. Không bao giờ trình bày như một sự thật.</p>
+
+<div class="callout rule">
+<span class="lab">Phiên bản trung thực của "gap filling"</span>
+<p>Brief mô tả hệ thống tự tìm tài liệu chính thức để bù lỗ hổng. Trong MVP, "bù lỗ hổng" nghĩa là: <strong>xếp lịch cho lỗ hổng đó, viết một primer, và chỉ tới link chính thức đã có trong catalog.</strong> Chúng ta không giả vờ tìm được một khóa học thay thế. Điều này giữ đúng cam kết "không im lặng bỏ qua" mà không mở ra cả một hệ thống search runtime.</p>
+</div>
+</section>
+
+<section id="s12">
+<h2 class="sec"><i>12</i>Daily Learning Experience</h2>
+<p class="kicker">13 thành phần trong brief. Dưới đây là phần giữ, phần gộp, phần hoãn — kèm lý do.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Thành phần</th><th class="tight">Quyết định</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td class="k">Mục tiêu hôm nay</td><td><span class="chip c-must">Giữ</span></td><td>1–2 dòng. Rẻ, định khung cho cả buổi.</td></tr>
+<tr><td class="k">Learning objectives</td><td><span class="chip c-must">Giữ</span></td><td>3–5 gạch đầu dòng. Cũng là checklist để kiểm tra bài giảng có bỏ sót không.</td></tr>
+<tr><td class="k">Tham chiếu tài liệu gốc</td><td><span class="chip c-must">Giữ</span></td><td><strong>Thiết yếu cho lòng tin.</strong> Người dùng phải mở được đúng slide 146–200 cạnh bài giảng để đối chiếu. Đây là thứ brief không liệt kê nhưng không thể thiếu.</td></tr>
+<tr><td class="k">Bài giảng tiếng Việt</td><td><span class="chip c-must">Giữ</span></td><td>Lõi của sản phẩm.</td></tr>
+<tr><td class="k">Giải thích keyword</td><td><span class="chip c-must">Gộp</span></td><td>Đặt <em>ngay tại chỗ thuật ngữ xuất hiện</em>, mở rộng được, thay vì một khối riêng cuối bài. Có thêm bảng tổng hợp glossary theo ngày.</td></tr>
+<tr><td class="k">Nhãn ngữ cảnh bài thi</td><td><span class="chip c-must">Giữ</span></td><td>MUST / SHOULD / GOOD / NOT REQUIRED gắn theo concept. Khác biệt hoá mạnh, chi phí gần bằng không vì cùng một lần sinh.</td></tr>
+<tr><td class="k">Bảng so sánh</td><td><span class="chip c-must">Gộp</span></td><td>Là <em>chỉ dẫn trong prompt sinh bài giảng</em>, phát sinh có điều kiện khi phát hiện cặp dễ nhầm — không phải một mục cố định.</td></tr>
+<tr><td class="k">Ví dụ</td><td><span class="chip c-must">Gộp</span></td><td>Như trên. Một phần của bài giảng, không phải một feature riêng.</td></tr>
+<tr><td class="k">Quan hệ giữa các khái niệm</td><td><span class="chip c-must">Thu hẹp</span></td><td>Giữ dạng <strong>chuỗi text thụt lề</strong> trong bài giảng. Sơ đồ render → hoãn. Text đạt 80% giá trị với 10% chi phí.</td></tr>
+<tr><td class="k">Tài nguyên chính thức</td><td><span class="chip c-must">Thu hẹp</span></td><td>1–3 link tra cứu deterministic từ catalog. Không search.</td></tr>
+<tr><td class="k">Quiz</td><td><span class="chip c-must">Giữ</span></td><td>Mục 13.</td></tr>
+<tr><td class="k">Review Mistakes (mục riêng)</td><td><span class="chip c-cut">Bỏ</span></td><td>Đã được phủ bởi warm-up review và màn hình kết quả quiz. Một mục nữa là thừa.</td></tr>
+<tr><td class="k">Hoàn thành ngày</td><td><span class="chip c-must">Giữ</span></td><td>Là sự kiện chuyển trạng thái điều khiển mọi thứ phía sau.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+<span class="lab">Challenge — Open Decision quan trọng nhất trong tài liệu này</span>
+<p>Brief viết: <em>"User có thể học bằng tài liệu tiếng Việt do system tạo ra"</em> — tức là <strong>thay thế</strong> slide gốc. Tôi đề xuất định vị khác: <strong>bài giảng là người hướng dẫn ngồi cạnh bạn khi bạn xem slide</strong>, không phải bản thay thế slide.</p>
+<p>Ba lý do:</p>
+<ul>
+<li><strong>Mất chi tiết.</strong> Một bản thay thế phải đúng 100%; một người hướng dẫn được phép nói "phần này xem kỹ slide 178". Rủi ro bỏ sót chi tiết quan trọng giảm đi một bậc.</li>
+<li><strong>Bản quyền.</strong> Bản thay thế đầy đủ tiến rất gần tới việc tái tạo một khóa học trả phí. Bản đồng hành là biến đổi (transformation) rõ ràng.</li>
+<li><strong>Chi phí và chất lượng.</strong> Sinh một bản thay thế đủ tốt tốn nhiều token hơn đáng kể và khó đạt chất lượng ổn định.</li>
+</ul>
+<p><strong>Đề xuất mặc định:</strong> companion — đủ dày để ôn lại một mình, nhưng thiết kế để đọc song song với slide (panel slide luôn mở cạnh bên). Ngoại lệ: với topic bù lỗ hổng, không có slide nào cả, nên ở đó bài giảng buộc phải đứng độc lập.</p>
+<p>Đây là <strong>Quyết định D1</strong> — cần chốt trước khi sang Stage 2 vì nó ảnh hưởng chi phí, prompt và cả UI.</p>
+</div>
+
+<h3>Định dạng đầu ra: khối có kiểu, không phải markdown blob</h3>
+<p>Bài giảng nên là một danh sách có thứ tự các khối có kiểu — <code>heading</code>, <code>paragraph</code>, <code>keyword</code>, <code>comparison_table</code>, <code>callout_exam</code>, <code>callout_conflict</code>, <code>list</code>, <code>relationship_chain</code>. Lý do: render nhất quán, gắn nguồn theo từng khối, validate được, mở đường cho nút "giải thích thêm" ở từng khối sau này, và <strong>mobile dùng lại nguyên vẹn</strong> (mục 24).</p>
+
+<h4>Learning Modes — cắt xuống một mode</h4>
+<div class="wide">
+<table>
+<thead><tr><th>Mode</th><th class="tight">Quyết định</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td class="k">Exam-focused easy Vietnamese</td><td><span class="chip c-must">MVP</span></td><td>Mode duy nhất. Vốn đã là sự pha trộn đúng của "dễ hiểu" và "bám bài thi".</td></tr>
+<tr><td class="k">Deep Dive</td><td><span class="chip c-cut">Bỏ</span></td><td>Với một kỳ thi <em>Practitioner</em>, học sâu là <strong>phản mục tiêu</strong> — chính brief nói vậy ở phần exam context. Mâu thuẫn nội tại.</td></tr>
+<tr><td class="k">Direct Translation</td><td><span class="chip c-cut">Bỏ</span></td><td>Mâu thuẫn với luận điểm sản phẩm (chúng ta không phải công cụ dịch), và là con đường ngắn nhất tới rủi ro tái tạo nội dung có bản quyền.</td></tr>
+<tr><td class="k">Easy Explanation (riêng)</td><td><span class="chip c-cut">Gộp</span></td><td>Đã nằm trong mode mặc định.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Độ dài mục tiêu: với một ngày ~3.5h phủ ~50 slide, bài giảng khoảng 1.500–2.500 từ tiếng Việt chia theo unit — đọc khoảng 15–20 phút. Phần thời gian còn lại là slide gốc, suy nghĩ, và quiz.</p>
+</section>
+
+<section id="s13">
+<h2 class="sec"><i>13</i>Quiz Scope</h2>
+<p class="kicker">Đây là nơi một lỗi duy nhất phá huỷ lòng tin nhanh nhất. Cổng kiểm soát phải chặt nhất ở đây.</p>
+
+<h3>Phạm vi</h3>
+<ul>
+<li><strong>Loại câu hỏi:</strong> single choice · multiple response (chọn 2 trong 5) · scenario-based single choice. Hết. Không kéo thả, không sắp thứ tự, không điền khuyết.</li>
+<li><strong>Số lượng:</strong> 6–10 câu mỗi ngày học, co giãn theo số unit. Cộng 3 câu warm-up lấy từ bank.</li>
+<li><strong>Chấm điểm:</strong> hoàn toàn deterministic. LLM không chạm vào việc chấm.</li>
+<li><strong>Bank câu hỏi:</strong> mọi câu sinh ra đều lưu lại kèm tag topic/task statement — dùng lại cho warm-up và cho Final Review Exam.</li>
+</ul>
+
+<div class="callout rule">
+<span class="lab">Cổng chất lượng số một</span>
+<p><strong>Mỗi câu hỏi phải kèm một <code>sourceSpan</code></strong> — một đoạn trích ngắn từ tài liệu hoặc bài giảng chứng minh cho đáp án đúng, cùng <code>sourceUnitId</code> và <code>taskStatementId</code>. Nếu model không sinh được đoạn trích đó, <strong>câu hỏi bị loại</strong>, không cố sửa.</p>
+<p>Đây là ràng buộc rẻ nhất và hiệu quả nhất chống lại việc AI bịa câu hỏi ngoài phạm vi hoặc sai đáp án.</p>
+</div>
+
+<h4>Pipeline validate (deterministic, chạy sau mỗi lần sinh)</h4>
+<div class="flow">✓ SINGLE có đúng một đáp án đúng · MULTI có ≥ 2
+✓ Các option không trùng nhau
+✓ Không có "tất cả đáp án trên" / "không đáp án nào"
+✓ Độ dài option không lệch quá mức (đáp án dài nhất = dấu hiệu lộ bài kinh điển)
+✓ Vị trí đáp án đúng được xáo lại deterministic → không lệch về A/B
+✓ Explanation không rỗng · mỗi option sai có lý do riêng
+✓ taskStatementId thuộc blueprint đang pin
+✓ sourceSpan tồn tại và khớp được với text nguồn
+
+Sai → sinh lại (tối đa N lần) → vẫn sai thì GIẢM SỐ CÂU,
+không bao giờ ship một câu chưa qua cổng.</div>
+
+<h4>Cấu trúc một câu hỏi</h4>
+<div class="flow">question · options[] · correctAnswer[] · explanation
+whyOthersAreWrong[] · relatedTopicId · taskStatementId
+sourceUnitId · sourceSpan · difficulty · generatedBy(model,promptVersion)</div>
+
+<h3>Final Review Exam — bổ sung vào MVP</h3>
+<div class="callout">
+<span class="lab">Bổ sung so với brief</span>
+<p>Brief để mock exam ra ngoài MVP. Xem lại: với một kế hoạch 11 ngày, người dùng <em>sẽ</em> muốn một bài thi thử trước ngày thi, và thiếu nó là một lỗ hổng trải nghiệm rõ ràng ngay trước khoảnh khắc quan trọng nhất.</p>
+<p>Nhưng nó gần như miễn phí: <strong>lắp một đề từ bank câu hỏi đã có</strong>, chọn deterministic theo trọng số domain, tính giờ. Không có logic sinh mới, không có prompt mới. Đưa vào MVP như một phần của năng lực Quiz, không phải một năng lực riêng.</p>
+</div>
+
+<h3>Chính sách nội dung</h3>
+<ul>
+<li>Nhãn <strong>"Câu hỏi luyện tập do AI tạo — không phải đề thi chính thức"</strong> hiện thường trực trên mọi màn hình quiz, không tắt được.</li>
+<li>Không bao giờ dùng chữ "đề thi thật", "câu hỏi chính thức", hay tên nhà cung cấp theo cách ngụ ý xác nhận.</li>
+<li><strong>Từ chối exam dump ngay lúc upload:</strong> heuristic trên tên file và nội dung (mẫu như "actual exam questions", "braindump", "real exam 2024", cấu trúc Q/A lặp không có nội dung giảng) → chặn kèm thông báo rõ ràng. Rẻ, và cần thiết trong thị trường này.</li>
+</ul>
+</section>
+
+<section id="s14">
+<h2 class="sec"><i>14</i>Progress Scope</h2>
+<p class="kicker">Không chỉ là <code>completed = true</code>, nhưng cũng không phải một learning analytics engine.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Field</th><th class="tight">MVP</th><th>Ghi chú</th></tr></thead>
+<tbody>
+<tr><td class="k">StudyDay.status</td><td><span class="chip c-must">Có</span></td><td><code>PLANNED · IN_PROGRESS · COMPLETED · SKIPPED · RESCHEDULED</code></td></tr>
+<tr><td class="k">Unit.status + completedAt</td><td><span class="chip c-must">Có</span></td><td>Độ mịn tự nhiên để "học một khối lúc đi làm về"</td></tr>
+<tr><td class="k">TopicMastery.accuracy</td><td><span class="chip c-must">Có</span></td><td>Suy ra từ <code>correctCount / totalCount</code>, không lưu trùng</td></tr>
+<tr><td class="k">mistakeCount</td><td><span class="chip c-must">Có</span></td><td>Suy ra từ lịch sử trả lời</td></tr>
+<tr><td class="k">actualMinutes</td><td><span class="chip c-should">Thô</span></td><td>Từ timestamp mở/đóng. <strong>Không xây UI đếm giờ.</strong></td></tr>
+<tr><td class="k">confidence (tự đánh giá)</td><td><span class="chip c-cut">Bỏ</span></td><td>Tín hiệu nhiễu, thêm một thao tác mỗi topic, và điểm quiz vốn đã là tín hiệu tốt hơn.</td></tr>
+<tr><td class="k">Khoảng lặp lại (SRS)</td><td><span class="chip c-could">Sau</span></td><td>Warm-up review đã tạo hiệu ứng tương tự với 5% chi phí.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Chuyển trạng thái mastery — thuần deterministic</h4>
+<div class="flow">NOT_STARTED  không có unit nào hoàn thành
+LEARNING     đã hoàn thành unit, accuracy chưa biết hoặc &lt; 70%
+REVIEW       accuracy &lt; 70% sau ≥ 3 câu đã trả lời
+MASTERED     accuracy ≥ 85% trên ≥ 5 câu,
+             trải qua ≥ 2 phiên cách nhau ≥ 1 ngày   ← điều kiện then chốt</div>
+<p>Điều kiện "2 phiên cách nhau ≥ 1 ngày" là thứ làm cho MASTERED có ý nghĩa thay vì chỉ là may mắn trong một buổi. <strong>LLM không được phép quyết định hay sửa bất kỳ trạng thái nào ở đây.</strong></p>
+
+<div class="callout stop">
+<span class="lab">Ranh giới cứng</span>
+<p>Tổng hợp theo domain được trình bày là <strong>tiến độ học</strong> ("Domain 2 — Generative AI: 68%"), <strong>không bao giờ</strong> là điểm thi dự đoán hay xác suất đậu. Không có câu nào trong sản phẩm được phép nói "bạn có 78% khả năng đậu".</p>
+</div>
+</section>
+
+<section id="s15">
+<h2 class="sec"><i>15</i>Adaptive Planning Scope</h2>
+<p class="kicker">Adaptive learning trong MVP = bốn trigger và một thuật toán. Không có recommendation engine.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Trigger</th><th>Điều kiện</th><th>Phản ứng</th></tr></thead>
+<tbody>
+<tr><td class="k">T1 — Bỏ ngày</td><td>Ngày không hoàn thành, phát hiện khi mở app lần kế tiếp (lazy eval, không cần cron)</td><td>Chuyển phần chưa xong về phía trước; replan phần còn lại</td></tr>
+<tr><td class="k">T2 — Quiz yếu</td><td>Topic vượt ngưỡng yếu (xem dưới)</td><td>Chèn block ôn 10–20 phút vào ngày khả dụng gần nhất, <strong>đặt trước nội dung mới</strong></td></tr>
+<tr><td class="k">T3 — Đổi ràng buộc</td><td>Người dùng sửa ngày thi / giờ rảnh / ngày nghỉ</td><td>Replan toàn bộ những ngày còn lại</td></tr>
+<tr><td class="k">T4 — Tick "đã biết"</td><td>Người dùng đánh dấu section đã nắm</td><td>Nén lại, giải phóng capacity cho phần còn lại</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Phát hiện topic yếu — deterministic, hai tầng</h4>
+<div class="flow">Tầng 1 — nhắc lại nhẹ (rẻ, phản ứng nhanh)
+  sai ≥ 1 câu ở một concept MUST_KNOW
+  → đưa câu đó vào warm-up ngày mai
+
+Tầng 2 — chèn block ôn vào lịch (tốn capacity, cần bằng chứng)
+  (accuracy &lt; 0.70 VÀ đã trả lời ≥ 3 câu)
+  HOẶC mistakeCount ≥ 2 trong 7 ngày gần nhất
+  HOẶC (domainWeight ≥ 20% VÀ accuracy &lt; 0.80)
+
+Xếp hạng:  weaknessScore = (1 − accuracy) × domainWeight × relevanceFactor
+Lấy top K theo capacity còn lại.</div>
+<p>Hai tầng là cần thiết: với 1 câu/topic mỗi ngày, quy tắc "≥3 câu" sẽ không bao giờ kích hoạt trong tuần đầu. Tầng 1 lấp đúng khoảng trống đó mà không tốn thời gian học.</p>
+
+<h4>Thuật toán replan</h4>
+<div class="flow">1. ĐÓNG BĂNG mọi ngày đã hoàn thành — không bao giờ ghi đè
+2. Tính lại capacity từ hôm nay → ngày thi
+3. Gom: unit chưa xong + block ôn topic yếu + unit còn lại theo kế hoạch
+4. Ưu tiên trong ngày: ôn trước, nội dung mới sau, theo trình tự khóa học
+5. Nếu effort > capacity → THANG NÉN:
+      bỏ OPTIONAL → hạ LOW → giảm độ sâu MEDIUM → cuối cùng báo cho người dùng
+6. Nếu capacity > effort → mở rộng cửa sổ ôn tập, KHÔNG bơm phồng bài giảng
+7. Ghi PlanAdjustment { reason · description } cho từng thay đổi</div>
+
+<p><strong>Người dùng luôn thấy diff:</strong> <em>"Kế hoạch đã cập nhật: thêm 2 buổi ôn RAG · lùi Bedrock Phần 2 sang ngày 12 · bỏ 3 chủ đề ngoài phạm vi thi."</em> Lý do thay đổi là chuỗi template deterministic, <strong>không phải AI sinh</strong> — rẻ hơn, nhất quán hơn, dịch được.</p>
+
+<div class="callout rule">
+<span class="lab">Khi không thể xếp vừa</span>
+<p>Nếu không còn đủ thời gian cho toàn bộ nội dung, hệ thống <strong>nói thật và trao quyền</strong> thay vì âm thầm cắt bớt: <em>"Không đủ thời gian cho toàn bộ khóa học. Ba lựa chọn: (a) tăng lên 5h/ngày, (b) dời ngày thi, (c) học chế độ ưu tiên — chỉ CRITICAL và HIGH, phủ 78% trọng số bài thi."</em></p>
+</div>
+</section>
+
+<section id="s16">
+<h2 class="sec"><i>16</i>Document Scope</h2>
+<p class="kicker">Ranh giới chống biến sản phẩm thành Document AI tổng quát.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Hành động trên tài liệu</th><th class="tight">Quyết định</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td class="k">Parse · dựng cấu trúc · map vào exam</td><td><span class="chip c-must">MVP</span></td><td>Là điều kiện cần của planner</td></tr>
+<tr><td class="k">Sinh bài giảng từ một page range</td><td><span class="chip c-must">MVP</span></td><td>Lõi sản phẩm</td></tr>
+<tr><td class="k">Sinh quiz từ một page range</td><td><span class="chip c-must">MVP</span></td><td>Vòng phản hồi</td></tr>
+<tr><td class="k">Phát hiện keyword quan trọng</td><td><span class="chip c-must">MVP</span></td><td>Nằm trong lần sinh bài giảng</td></tr>
+<tr><td class="k">Hỏi đáp <em>trong phạm vi</em> bài học hôm nay</td><td><span class="chip c-should">v1.1</span></td><td>Feature giữ chân mạnh, nhưng mở ra nhu cầu retrieval. Phiên bản có kiểm soát: ô hỏi chỉ xuất hiện <em>bên trong</em> một bài học, chỉ trả lời từ material của unit đó + blueprint, từ chối dứt khoát khi ra ngoài phạm vi.</td></tr>
+<tr><td class="k">Tóm tắt / dịch một file bất kỳ</td><td><span class="chip c-wont">Loại</span></td><td>Đây chính là ranh giới "generic Document AI". Không có gì liên quan tới việc thi.</td></tr>
+<tr><td class="k">Chat tự do trên toàn bộ tài liệu</td><td><span class="chip c-wont">Loại</span></td><td>Biến sản phẩm thành ChatGPT wrapper — mất đúng lợi thế của mình.</td></tr>
+<tr><td class="k">Quản lý file: folder · share · version</td><td><span class="chip c-wont">Loại</span></td><td>Không phải sản phẩm này.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<span class="part">Phần III — Thế trận kỹ thuật (chưa phải kiến trúc)</span>
+
+<section id="s17">
+<h2 class="sec"><i>17</i>RAG Decision</h2>
+<p class="kicker">Kết luận trước, lập luận sau: <strong>Vector DB is not required for MVP.</strong></p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Tiêu chí</th><th>Thực tế của bài toán này</th></tr></thead>
+<tbody>
+<tr><td class="k">Kích thước corpus</td><td>Một khóa học ≈ 300–600 slide. Slide vốn cô đọng: ~60 từ/slide → ~24k từ ≈ <strong>35k token</strong>. Rất nhỏ.</td></tr>
+<tr><td class="k">Số tài liệu / plan</td><td>1 primary course (có thể nhiều file nhưng cùng một khóa)</td></tr>
+<tr><td class="k">Kiểu truy cập trong core loop</td><td><strong>Luôn theo page range đã biết trước.</strong> Để sinh bài giảng ngày 9 ta cần trang 146–200 — biết chính xác từ lịch. Không có nhu cầu tìm kiếm ngữ nghĩa nào cả.</td></tr>
+<tr><td class="k">Mapping topic → task statement</td><td>Chạy trên <em>outline</em> đã trích xuất (nhỏ), không phải toàn văn. Một lần gọi có cấu trúc là đủ.</td></tr>
+<tr><td class="k">Tra chéo glossary</td><td>"Thuật ngữ này còn xuất hiện ở slide 30, 88, 210" → <strong>inverted index từ khoá</strong>. Chính xác, rẻ, giải thích được. Embedding không thắng ở đây.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="grid2">
+<div class="card is"><h4>Option A — Page range trực tiếp <span class="chip c-must">Chọn</span></h4><p>Lấy text theo range đã biết, đưa thẳng vào prompt. Cộng một inverted index từ khoá deterministic cho việc tra chéo.</p><p><strong>Được:</strong> zero hạ tầng mới, chính xác tuyệt đối, truy vết được, không có lỗi retrieval. <strong>Mất:</strong> không hỏi đáp ngữ nghĩa được.</p></div>
+<div class="card isnot"><h4>Option B — Full RAG <span class="chip c-wont">Hoãn</span></h4><p>Chunk → embedding → vector store → retrieve.</p><p><strong>Chi phí:</strong> hạ tầng mới, pipeline embedding, tuning chunk size, một lớp lỗi mới (retrieve sai đoạn) — <strong>để giải quyết một vấn đề core loop không có</strong>.</p></div>
+</div>
+
+<p><strong>Khi nào cần embedding:</strong> đúng lúc ship tính năng hỏi đáp trong phạm vi (v1.1). Khi đó, hướng đi là mở rộng CSDL quan hệ hiện có thay vì thêm một hệ thống mới.</p>
+
+<div class="callout rule">
+<span class="lab">Chốt — không phải "cấm", mà là "chưa cần"</span>
+<p><strong>Vector DB is not required for MVP.</strong> MVP ưu tiên <em>structural retrieval</em>: <code>Document → Section → Learning Unit → sourceSpan / page range</code>. Cách truy cập của core loop là <em>theo vị trí đã biết</em>, không phải theo ngữ nghĩa — nên embedding không giải quyết vấn đề nào đang có, và thêm một tầng xấp xỉ có xác suất sai vào chỗ đang chính xác tuyệt đối.</p>
+<p><strong>Nhưng không được tạo ràng buộc kiến trúc chặn semantic retrieval sau này.</strong> Cụ thể: tầng truy xuất phải nằm sau một cổng (retrieval port) để có thể thêm một chiến lược ngữ nghĩa bên cạnh chiến lược cấu trúc; text đã trích xuất phải lưu ở dạng addressable theo trang/section để chunk được về sau mà không phải parse lại; và lựa chọn CSDL phải cho phép thêm vector index tại chỗ (xem Stage 2 — đây là một trong các lý do chọn PostgreSQL).</p>
+</div>
+</section>
+
+<section id="s18">
+<h2 class="sec"><i>18</i>External Search Scope</h2>
+
+<p><strong>MVP: không có tìm kiếm web lúc chạy.</strong> Điều này là hệ quả trực tiếp của quyết định catalog ở mục 09.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Nhu cầu</th><th class="tight">MVP</th><th>Cách xử lý</th></tr></thead>
+<tbody>
+<tr><td class="k">Tìm chứng chỉ · exam guide · domain weight</td><td><span class="chip c-must">Offline</span></td><td>Curate lúc seed catalog. Lưu SourceRef + <code>retrievedAt</code> + <code>contentHash</code>.</td></tr>
+<tr><td class="k">Link tài liệu chính thức cho từng task statement</td><td><span class="chip c-must">Offline</span></td><td>Cùng lúc seed. Tra cứu deterministic lúc chạy.</td></tr>
+<tr><td class="k">Phát hiện exam guide thay đổi</td><td><span class="chip c-should">v1.1</span></td><td>Job định kỳ so <code>contentHash</code>. MVP: kiểm tra thủ công theo quý.</td></tr>
+<tr><td class="k">Tìm tài liệu bù lỗ hổng</td><td><span class="chip c-wont">Không</span></td><td>Thay bằng primer + link chính thức có sẵn (mục 11).</td></tr>
+<tr><td class="k">Auto-discovery chứng chỉ đuôi dài</td><td><span class="chip c-should">v1.1</span></td><td>Khi mở, phải kèm nhãn <em>"Dữ liệu do AI trích xuất, chưa kiểm chứng"</em> và plan chạy ở chế độ tin cậy thấp.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Thứ hạng nguồn, phát hiện trùng lặp, phát hiện nội dung cũ — tất cả vẫn được mô hình hoá trong SourceRef, chỉ là được <em>con người</em> áp dụng trong MVP thay vì một pipeline.</p>
+</section>
+
+<section id="s19">
+<h2 class="sec"><i>19</i>AI Responsibilities — Feature Audit</h2>
+<p class="kicker">Với mỗi hạng mục: có thực sự cần LLM không?</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Hạng mục</th><th>Vì sao AI</th><th>Rủi ro</th><th>Thay bằng code được?</th><th class="tight">Grounding</th><th class="tight">MVP</th></tr></thead>
+<tbody>
+<tr><td class="k">Trích xuất exam blueprint</td><td>Parse PDF exam guide thành domain/task</td><td><span class="sev hi">Cao</span> — sai trọng số là hỏng cả lịch</td><td><strong>Có</strong> — curate thủ công cho 1–3 cert</td><td class="tight">PDF gốc</td><td class="tight"><span class="chip c-det">AI + người duyệt, lúc seed</span></td></tr>
+<tr><td class="k">Dựng cấu trúc khóa học</td><td>Heuristic thuần thất bại trên deck đa dạng</td><td><span class="sev hi">Cao</span> — sai page range là sai mọi bài giảng</td><td>Một phần — outline/PPTX section khi có thì <em>ưu tiên</em></td><td class="tight">Text theo trang</td><td class="tight"><span class="chip c-ai">AI + validate</span></td></tr>
+<tr><td class="k">Map topic → task statement</td><td>Bài toán ngữ nghĩa thuần tuý</td><td><span class="sev md">TB-Cao</span></td><td>Không — overlap từ khoá chỉ làm baseline kiểm tra</td><td class="tight">Cả hai cây</td><td class="tight"><span class="chip c-ai">AI + ngưỡng</span></td></tr>
+<tr><td class="k">Phát hiện lỗ hổng</td><td>—</td><td><span class="sev lo">Thấp</span></td><td><strong>Có</strong> — phép trừ tập hợp trên mapping</td><td class="tight">—</td><td class="tight"><span class="chip c-det">Deterministic</span></td></tr>
+<tr><td class="k">Đánh giá độ khó / mật độ</td><td>Cảm nhận nội dung</td><td><span class="sev lo">Thấp</span> — chỉ dịch chuyển số phút</td><td>Một phần — word/page count là baseline khá tốt</td><td class="tight">Text unit</td><td class="tight"><span class="chip c-ai">AI, chặn ±40%</span></td></tr>
+<tr><td class="k">Chia unit</td><td>Biết chỗ cắt tự nhiên</td><td><span class="sev lo">Thấp</span></td><td>Một phần</td><td class="tight">Cấu trúc</td><td class="tight"><span class="chip c-ai">Lai</span></td></tr>
+<tr><td class="k">Xếp lịch</td><td>—</td><td>—</td><td><strong>Hoàn toàn</strong></td><td class="tight">—</td><td class="tight"><span class="chip c-det">Không AI</span></td></tr>
+<tr><td class="k">Bài giảng tiếng Việt</td><td>Không thể thay thế</td><td><span class="sev hi">Cao</span> — bịa hoặc bỏ sót</td><td>Không</td><td class="tight">Bắt buộc</td><td class="tight"><span class="chip c-ai">AI · lõi</span></td></tr>
+<tr><td class="k">Chọn keyword</td><td>Lọc theo mức liên quan</td><td><span class="sev lo">Thấp</span></td><td>Một phần — ứng viên lấy deterministic</td><td class="tight">Blueprint</td><td class="tight"><span class="chip c-ai">Lai</span></td></tr>
+<tr><td class="k">Giải thích keyword</td><td>Diễn giải</td><td><span class="sev md">TB</span></td><td>Không</td><td class="tight">Bắt buộc</td><td class="tight"><span class="chip c-ai">AI</span></td></tr>
+<tr><td class="k">Chuỗi quan hệ khái niệm</td><td>Diễn giải</td><td><span class="sev md">TB</span></td><td>Không</td><td class="tight">Material</td><td class="tight"><span class="chip c-ai">AI · chỉ text</span></td></tr>
+<tr><td class="k">Bảng so sánh</td><td>Nhận diện cặp dễ nhầm</td><td><span class="sev md">TB</span> — sai sự thật</td><td>Không</td><td class="tight">Material</td><td class="tight"><span class="chip c-ai">Trong bài giảng</span></td></tr>
+<tr><td class="k">Nhãn MUST / SHOULD / GOOD</td><td>Sắc thái 4 mức</td><td><span class="sev lo">Thấp</span></td><td>Một phần — <em>không map tới task statement nào → NOT_REQUIRED, không cần AI</em></td><td class="tight">Blueprint</td><td class="tight"><span class="chip c-ai">Lai</span></td></tr>
+<tr><td class="k">Sinh quiz</td><td>Không thể thay thế</td><td><span class="sev hi">Cao</span> — sai đáp án</td><td>Không</td><td class="tight">Bắt buộc + sourceSpan</td><td class="tight"><span class="chip c-ai">AI · cổng chặt</span></td></tr>
+<tr><td class="k">Giải thích đáp án</td><td>Cùng lần gọi với sinh quiz</td><td><span class="sev md">TB</span></td><td>Không</td><td class="tight">Bắt buộc</td><td class="tight"><span class="chip c-ai">AI</span></td></tr>
+<tr><td class="k">Chấm bài</td><td>—</td><td>—</td><td><strong>Hoàn toàn</strong> — trắc nghiệm</td><td class="tight">—</td><td class="tight"><span class="chip c-det">Không AI</span></td></tr>
+<tr><td class="k">Điểm · mastery · trạng thái</td><td>—</td><td>—</td><td><strong>Hoàn toàn</strong></td><td class="tight">—</td><td class="tight"><span class="chip c-det">Không AI</span></td></tr>
+<tr><td class="k">Phát hiện topic yếu</td><td>—</td><td>—</td><td><strong>Hoàn toàn</strong></td><td class="tight">—</td><td class="tight"><span class="chip c-det">Không AI</span></td></tr>
+<tr><td class="k">Giải thích vì sao yếu + bài ôn nhanh</td><td>Diễn giải</td><td><span class="sev lo">Thấp-TB</span></td><td>Không</td><td class="tight">Lịch sử sai</td><td class="tight"><span class="chip c-ai">AI · ngắn</span></td></tr>
+<tr><td class="k">Replan</td><td>—</td><td>—</td><td><strong>Hoàn toàn</strong></td><td class="tight">—</td><td class="tight"><span class="chip c-det">Không AI</span></td></tr>
+<tr><td class="k">Câu chữ giải thích thay đổi lịch</td><td>—</td><td><span class="sev lo">Thấp</span></td><td><strong>Có</strong> — template</td><td class="tight">—</td><td class="tight"><span class="chip c-det">Template</span></td></tr>
+<tr><td class="k">Phát hiện mâu thuẫn khóa vs official</td><td>Nhận diện ngữ nghĩa</td><td><span class="sev md">TB</span> — báo nhầm gây khó chịu</td><td>Một phần — lệch <em>phiên bản</em> phát hiện được bằng ngày tháng</td><td class="tight">Blueprint</td><td class="tight"><span class="chip c-ai">Hẹp trong MVP</span></td></tr>
+<tr><td class="k">Dự đoán xác suất đậu</td><td>—</td><td><span class="sev hi">Cao</span></td><td>—</td><td class="tight">—</td><td class="tight"><span class="chip c-wont">Loại vĩnh viễn</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Kiểm soát chất lượng chung cho mọi đầu ra AI</h4>
+<ul>
+<li><strong>Validate schema</strong> trước khi lưu, có retry kèm phản hồi lỗi, có đường lui.</li>
+<li><strong>Glossary theo plan</strong> — mỗi thuật ngữ giải thích một lần; lần sau chỉ link lại. Chống lặp và giảm token.</li>
+<li><strong>Kiểm tra phủ MUST_KNOW</strong> — pass rẻ xác nhận mọi concept MUST_KNOW của task statement liên quan đều xuất hiện trong bài giảng.</li>
+<li><strong>Kiểm tra trùng lặp n-gram</strong> với văn bản nguồn → chống tái tạo nguyên văn (mục 22).</li>
+<li><strong>Nút "báo sai" trên từng khối</strong>, đẩy vào hàng đợi review. Với một sản phẩm có rủi ro sai sót, đây không phải tính năng phụ.</li>
+<li><strong>Mọi bản ghi AI mang metadata</strong>: model, promptVersion, generatedAt, sourceRefs, reviewStatus.</li>
+</ul>
+</section>
+
+<section id="s20">
+<h2 class="sec"><i>20</i>Deterministic Responsibilities</h2>
+<p class="kicker">Danh sách những thứ LLM không bao giờ được sở hữu. Dùng làm checklist review kiến trúc ở Stage 2.</p>
+
+<div class="grid2">
+<div class="card">
+<h4>Thời gian &amp; lịch</h4>
+<ul><li>Mọi phép tính ngày tháng</li><li>Capacity theo ngày và theo thứ</li><li>Ngày nghỉ, giờ tối đa</li><li>Không xếp lịch sau ngày thi</li><li>Kích thước cửa sổ ôn tập</li><li>Phân bổ lại phần chưa xong</li><li>Thang nén khi thiếu thời gian</li></ul>
+</div>
+<div class="card">
+<h4>Đánh giá &amp; trạng thái</h4>
+<ul><li>Chấm câu trả lời</li><li>Tính accuracy, mistakeCount</li><li>Chuyển trạng thái mastery</li><li>Ngưỡng phát hiện topic yếu</li><li>Xếp hạng weaknessScore</li><li>Tổng hợp tiến độ theo domain</li></ul>
+</div>
+<div class="card">
+<h4>Cấu trúc &amp; tính toàn vẹn</h4>
+<ul><li>Validate page range (liên tục, không chồng lấn, phủ hết)</li><li>Phép trừ tập hợp cho coverage</li><li>Ước lượng khối lượng và chuẩn hoá</li><li>Kiểm tra tính hợp lệ của quiz</li><li>Ràng buộc khoá ngoại tới blueprint</li></ul>
+</div>
+<div class="card">
+<h4>Chính sách</h4>
+<ul><li>Chính sách retry và fallback</li><li>Cái gì được lưu, cái gì bị loại</li><li>Nhãn nguồn gốc nội dung</li><li>Chặn exam dump lúc upload</li><li>Quyền truy cập và xoá dữ liệu</li></ul>
+</div>
+</div>
+</section>
+
+<section id="s21">
+<h2 class="sec"><i>21</i>Source Priority</h2>
+
+<div class="flow">1  Official Exam Page / Exam Guide   →  QUYẾT ĐỊNH cái gì cần thi
+2  User-selected Primary Course      →  QUYẾT ĐỊNH trình tự học + khối lượng
+3  Official Documentation            →  KIỂM CHỨNG + bù lỗ hổng
+4  Trusted Third-party               →  BỔ SUNG        (chưa dùng trong MVP)
+5  Community Content                 →  BỔ SUNG        (chưa dùng trong MVP)
+6  AI Knowledge                      →  DIỄN GIẢI · TỔ CHỨC · BIẾN ĐỔI
+                                        không bao giờ là nguồn factual chính</div>
+
+<h4>Quy tắc phân xử</h4>
+<ul>
+<li>Khóa học mâu thuẫn nguồn chính thức → <strong>nguồn chính thức thắng</strong>, và mâu thuẫn được ghi lại + hiển thị, không âm thầm sửa.</li>
+<li>Nguồn chính thức im lặng (ví dụ passing score) → <strong>để trống</strong>, không suy đoán.</li>
+<li>AI được phép bổ sung nền tảng khi tài liệu mỏng → nhưng khối đó mang nhãn <code>AI_SUPPLEMENT</code> và hiển thị khác đi một cách tinh tế.</li>
+<li>Mọi factual item quan trọng truy vết được về một SourceRef.</li>
+</ul>
+</section>
+
+<section id="s22">
+<h2 class="sec"><i>22</i>Data Ownership</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th>Nhóm dữ liệu</th><th>Ví dụ</th><th>Quy tắc</th></tr></thead>
+<tbody>
+<tr><td class="k">External Facts</td><td>certification, exam code, domain, trọng số, version</td><td>Bất biến theo version. Bắt buộc có provenance. <strong>AI không sửa lúc chạy.</strong> Dùng chung giữa mọi user.</td></tr>
+<tr><td class="k">User Data</td><td>ngày thi, giờ rảnh, cài đặt, tiến độ</td><td>Xuất được, xoá được. Riêng tư tuyệt đối.</td></tr>
+<tr><td class="k">Uploaded Data</td><td>slide, PDF, ghi chú cá nhân</td><td>Riêng tư cho một user. Mã hoá khi lưu. <strong>Không dùng để train, không dùng chéo giữa user, không xây catalog công khai từ đó.</strong> Giữ trong thời gian plan còn hoạt động + 90 ngày.</td></tr>
+<tr><td class="k">AI-derived Data</td><td>topic, bài giảng, keyword, quiz, mapping</td><td>Luôn gắn model + promptVersion + generatedAt + sourceRefs + reviewStatus. <strong>Không bao giờ hiển thị lẫn với nội dung official.</strong></td></tr>
+<tr><td class="k">System-derived Data</td><td>lịch, điểm, trạng thái, capacity còn lại</td><td>Tính lại được từ event. Giữ nhật ký thay đổi kế hoạch để lịch có thể kiểm toán.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Bản quyền &amp; nội dung khóa học</h3>
+<ul>
+<li>Người dùng xác nhận có quyền truy cập hợp pháp lúc upload; ghi log việc xác nhận này.</li>
+<li>Nội dung riêng tư cho người upload. <strong>MVP không có bất kỳ tính năng chia sẻ nào</strong> — điều này giải quyết phần lớn rủi ro bản quyền bằng cấu trúc chứ không bằng chính sách.</li>
+<li>Đầu ra là biến đổi (diễn giải, cấu trúc hoá, câu hỏi), <strong>không phải tái tạo</strong>. Ràng buộc cứng: không khối văn bản nguyên văn nào vượt ~50 từ; prompt cấm sao chép nguyên văn; và một <strong>kiểm tra trùng lặp n-gram deterministic</strong> so bài giảng sinh ra với văn bản nguồn, gắn cờ khi trùng cao.</li>
+<li>Không xuất file gốc, không phân phối lại, không marketplace.</li>
+<li>Từ chối exam dump ngay lúc upload. Có kênh tiếp nhận yêu cầu gỡ bỏ.</li>
+</ul>
+<p><em>Câu hỏi mở:</em> khi người dùng xoá file gốc, bài giảng đã sinh có được giữ không? Đề xuất: <strong>giữ bài giảng của những ngày đã hoàn thành</strong> (đó là hồ sơ học tập của họ và là nội dung đã biến đổi), nhưng panel xem slide ngừng hoạt động; kèm một hành động riêng "xoá toàn bộ". Xem D10.</p>
+</section>
+
+<span class="part">Phần IV — Giao hàng</span>
+
+<section id="s23">
+<h2 class="sec"><i>23</i>Web MVP Screens</h2>
+<p class="kicker">Bảy route. Danh sách candidate trong brief bị gộp lại và bổ sung một màn hình thiết yếu bị thiếu.</p>
+
+<h4>Đã thay đổi gì so với danh sách candidate</h4>
+<ul>
+<li><strong>Dashboard → gộp vào Today.</strong> Với một plan duy nhất, một dashboard riêng là nghi thức rỗng. Trang chủ <em>chính là</em> Hôm nay.</li>
+<li><strong>Certification Setup + Course Materials + Availability → một wizard onboarding.</strong> Sau khi xong, chúng trở thành mục trong Settings, không phải màn hình thường trực.</li>
+<li><strong>Progress → tab của Plan.</strong> Giảm gánh nặng điều hướng; hai thứ này luôn được xem cùng nhau.</li>
+<li><strong>Bổ sung: panel xem slide gốc.</strong> Thiếu trong danh sách candidate nhưng bắt buộc — không đối chiếu được với slide thì không có lòng tin. Là panel trong Today, không phải màn hình riêng.</li>
+<li><strong>Bổ sung: màn hình đang phân tích.</strong> Nó là một khoảnh khắc giá trị, không phải một spinner.</li>
+</ul>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Màn hình</th><th>Mục đích</th><th>Thông tin chính</th><th>Hành động chính</th><th>Hành động phụ</th></tr></thead>
+<tbody>
+<tr><td class="k">Auth</td><td>Vào được sản phẩm với ma sát tối thiểu</td><td>—</td><td>Đăng nhập / đăng ký</td><td>Quên mật khẩu</td></tr>
+<tr><td class="k">Onboarding wizard</td><td>Từ số không đến một kế hoạch</td><td>Chọn cert → ngày thi + giờ rảnh → <strong>capacity check</strong> → upload → <strong>đang phân tích</strong> (hiện section trích được) → tick phần đã biết + xem coverage → plan</td><td>Bước tiếp theo</td><td>Quay lại · lưu nháp · bỏ qua phần tuỳ chọn</td></tr>
+<tr><td class="k">Today <em>(trang chủ)</em></td><td>Trả lời đúng một câu: hôm nay học gì</td><td>Ngày N/M · warm-up 3 câu · các Learning Unit · bài giảng tiếng Việt · panel slide gốc cạnh bên · nhãn MUST/SHOULD · thanh tiến độ trong ngày</td><td>Bắt đầu / tiếp tục học → Làm quiz</td><td>Mở slide gốc · báo nội dung sai · đánh dấu unit xong · xem trước ngày mai</td></tr>
+<tr><td class="k">Quiz + Kết quả</td><td>Kiểm tra hiểu, tạo tín hiệu phản hồi</td><td>Câu hỏi · giải thích · vì sao đáp án khác sai · topic và domain liên quan · nhãn "do AI tạo"</td><td>Nộp bài → Hoàn thành ngày</td><td>Báo câu hỏi sai · xem lại câu đã sai</td></tr>
+<tr><td class="k">Plan · tab Tiến độ</td><td>Toàn cảnh và niềm tin vào lịch</td><td>Lịch theo ngày · trạng thái từng ngày · ma trận coverage theo domain · nhật ký điều chỉnh · tiến độ theo domain · danh sách topic yếu</td><td>Xem chi tiết một ngày</td><td>Đánh dấu đã biết · đổi ngày thi/giờ rảnh → replan · làm Final Review Exam</td></tr>
+<tr><td class="k">Materials</td><td>Quản lý tối thiểu tệp nguồn</td><td>Danh sách file · trạng thái xử lý · cảnh báo trang không trích được · cấu trúc đã nhận diện</td><td>Thêm tài liệu</td><td>Xử lý lại · sửa ranh giới section · xoá</td></tr>
+<tr><td class="k">Settings</td><td>Sửa ràng buộc và quản lý dữ liệu</td><td>Ngày thi · giờ theo thứ · ngày nghỉ · tài khoản</td><td>Lưu → replan</td><td>Xuất dữ liệu · xoá tài khoản</td></tr>
+</tbody>
+</table>
+</div>
+<p>Chưa cần UI pixel-perfect ở giai đoạn này. Điều cần chốt là: <strong>Today là trang chủ, panel slide gốc là bắt buộc, và onboarding là một luồng chứ không phải một tập màn hình rời.</strong></p>
+</section>
+
+<section id="s24">
+<h2 class="sec"><i>24</i>Mobile Future Scope</h2>
+<p class="kicker">Không thiết kế mobile bây giờ. Chỉ chốt một ràng buộc để sau này không phải viết lại.</p>
+
+<div class="grid2">
+<div class="card is"><h4>Mobile về sau phục vụ</h4><ul><li>Đọc bài giảng của Hôm nay</li><li>Warm-up review và quiz</li><li>Liếc tiến độ</li><li>Thông báo nhắc học</li><li>Flashcard nếu có</li></ul></div>
+<div class="card isnot"><h4>Mobile sẽ không phục vụ</h4><ul><li>Onboarding và upload tài liệu</li><li>Chỉnh sửa kế hoạch</li><li>Ma trận coverage</li><li>Xem slide gốc chi tiết</li></ul></div>
+</div>
+
+<div class="callout rule">
+<span class="lab">Ràng buộc duy nhất cần chốt ở Product Scope</span>
+<p><strong>Mọi business rule nằm ở server. Client chỉ render và tương tác.</strong> Cụ thể, ba hệ quả bắt buộc:</p>
+<ul>
+<li>Không có logic lịch, chấm điểm, hay chuyển trạng thái nào trong React.</li>
+<li>Bài giảng được trả về dưới dạng <strong>khối có kiểu</strong> (mục 12), không phải HTML hay markdown blob — để bất kỳ client nào cũng render được theo cách của mình.</li>
+<li>API được thiết kế client-agnostic, không gắn chặt vào cách React tổ chức màn hình.</li>
+</ul>
+<p>Chọn framework mobile là việc của tương lai, không phải bây giờ.</p>
+</div>
+</section>
+
+<section id="s25">
+<h2 class="sec"><i>25</i>Feature Audit &amp; MoSCoW</h2>
+
+<h3>Danh sách loại bỏ — phần quan trọng nhất của mục này</h3>
+<div class="wide">
+<table>
+<thead><tr><th>Feature</th><th>Phân loại</th><th>Lý do loại</th></tr></thead>
+<tbody>
+<tr><td class="k">Direct Translation mode</td><td><span class="chip c-cut">Loại</span></td><td>Mâu thuẫn luận điểm sản phẩm; là con đường ngắn nhất tới rủi ro bản quyền</td></tr>
+<tr><td class="k">Deep Dive mode</td><td><span class="chip c-cut">Loại</span></td><td>Phản mục tiêu với kỳ thi Practitioner; mâu thuẫn với chính phần exam context của brief</td></tr>
+<tr><td class="k">Trình độ tự đánh giá</td><td><span class="chip c-cut">Loại</span></td><td>Thay bằng tick section thật sau phân tích — cụ thể hơn, chính xác hơn</td></tr>
+<tr><td class="k">Confidence tự chấm</td><td><span class="chip c-cut">Loại</span></td><td>Tín hiệu nhiễu; điểm quiz tốt hơn; thêm một thao tác mỗi topic</td></tr>
+<tr><td class="k">Suy luận prerequisite</td><td><span class="chip c-cut">Loại</span></td><td>Trình tự khóa học đã là đồ thị prerequisite, do tác giả làm tốt hơn</td></tr>
+<tr><td class="k">Auto-discovery cert lúc chạy</td><td><span class="chip c-should">Hạ cấp</span></td><td>Giá trị người dùng bằng không khi cert đã có trong catalog; rủi ro sai trọng số quá cao</td></tr>
+<tr><td class="k">Tìm web bù lỗ hổng</td><td><span class="chip c-should">Hạ cấp</span></td><td>Thay bằng primer + link chính thức có sẵn</td></tr>
+<tr><td class="k">Vector DB / full RAG</td><td><span class="chip c-should">Chưa cần</span></td><td><em>Not required for MVP</em> — truy cập là theo page range, không phải ngữ nghĩa. Kiến trúc phải để ngỏ đường thêm sau (mục 17)</td></tr>
+<tr><td class="k">Sơ đồ quan hệ render</td><td><span class="chip c-could">Hoãn</span></td><td>Chuỗi text đạt 80% giá trị với 10% chi phí</td></tr>
+<tr><td class="k">DOCX · MD · TXT · transcript</td><td><span class="chip c-should">Hoãn</span></td><td>Mỗi định dạng là một parser riêng; PDF + PPTX phủ đúng use case Udemy</td></tr>
+<tr><td class="k">Chat tự do / Document AI</td><td><span class="chip c-wont">Loại</span></td><td>Vi phạm ranh giới; mất chính lợi thế của mình</td></tr>
+<tr><td class="k">Dự đoán xác suất đậu</td><td><span class="chip c-wont">Loại</span></td><td>Không cơ sở, không kiểm chứng được, sai một lần mất sạch uy tín</td></tr>
+<tr><td class="k">Quản lý tài liệu (folder/share/version)</td><td><span class="chip c-wont">Loại</span></td><td>Không phải sản phẩm này</td></tr>
+<tr><td class="k">Nhiều plan song song</td><td><span class="chip c-could">Hoãn</span></td><td>Hệ số nhân độ phức tạp (chia capacity) cho gần như không giá trị MVP</td></tr>
+<tr><td class="k">Thông báo / email nhắc học</td><td><span class="chip c-should">Hoãn</span></td><td>Là giàn giáo giữ chân, không phải thứ kiểm chứng luận điểm. <em>Nhưng là đòn bẩy giữ chân số 1 của v1.1.</em></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>MUST HAVE — bảy năng lực</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Năng lực</th><th>Bao gồm</th></tr></thead>
+<tbody>
+<tr><td class="k">M1</td><td>Setup &amp; Capacity Reality Check</td><td>Tài khoản · chọn cert từ catalog · ngày thi · giờ rảnh theo thứ · ngày nghỉ · kiểm tra sức chứa tức thì</td></tr>
+<tr><td class="k">M2</td><td>Hiểu tài liệu</td><td>Upload PDF/PPTX · trích xuất · dựng cấu trúc có page range · validate · cảnh báo trang không đọc được</td></tr>
+<tr><td class="k">M3</td><td>Map vào exam scope</td><td>Topic → task statement kèm confidence · ma trận coverage · phát hiện lỗ hổng · phân loại EXTRA</td></tr>
+<tr><td class="k">M4</td><td>Lập lịch deterministic</td><td>Ước lượng khối lượng + chuẩn hoá · ràng buộc cứng · cửa sổ ôn tập · thang nén · truy vết tới file + page range</td></tr>
+<tr><td class="k">M5</td><td>Daily Learning Pack tiếng Việt</td><td>Mục tiêu · bài giảng dạng khối có kiểu · keyword tại chỗ · nhãn ngữ cảnh thi · so sánh khi cần · panel slide gốc · pre-generate ngày kế</td></tr>
+<tr><td class="k">M6</td><td>Quiz có grounding</td><td>3 loại câu · bắt buộc sourceSpan · pipeline validate · giải thích + vì sao sai · bank câu hỏi · warm-up 3 câu · <strong>Final Review Exam lắp từ bank</strong></td></tr>
+<tr><td class="k">M7</td><td>Tiến độ &amp; điều chỉnh</td><td>Trạng thái deterministic · phát hiện topic yếu 2 tầng · 4 trigger replan · hiện diff thay đổi · nói thật khi không đủ thời gian</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="grid2">
+<div class="card"><h4><span class="chip c-should">Should</span> &nbsp;v1.1</h4><ul><li>Vision cho slide nhiều sơ đồ (ưu tiên cao nhất)</li><li>Nhắc học qua email / web push</li><li>Hỏi đáp trong phạm vi bài học hôm nay</li><li>Auto-discovery cert kèm nhãn chưa kiểm chứng</li><li>Thêm định dạng: DOCX, MD, TXT</li><li>Nhiều vai trò tài liệu hoạt động thật</li><li>Job theo dõi thay đổi exam guide</li><li>Xuất lịch ra calendar</li></ul></div>
+<div class="card"><h4><span class="chip c-could">Could</span> &nbsp;Tương lai</h4><ul><li>Flashcard + SRS thật</li><li>Bài giảng dạng audio (TTS tiếng Việt) — rất hợp với người đi làm nghe lúc di chuyển</li><li>Sơ đồ quan hệ render</li><li>Nhiều plan song song</li><li>Ngôn ngữ đầu ra khác</li><li>Ứng dụng mobile</li><li>Dashboard cho team / L&amp;D</li></ul></div>
+<div class="card isnot"><h4><span class="chip c-wont">Won't</span> &nbsp;Loại rõ ràng</h4><ul><li>Exam dump dưới mọi hình thức</li><li>Tuyên bố "đề thi chính thức"</li><li>Dự đoán xác suất đậu</li><li>Chat tự do / Document AI</li><li>LMS, org, cohort, chấm bài</li><li>Marketplace nội dung</li><li>Mạng xã hội, bảng xếp hạng công khai</li><li>Proctoring</li><li>OCR sách scan · ingest video</li></ul></div>
+</div>
+</section>
+
+<section id="s26">
+<h2 class="sec"><i>26</i>Product Risks</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Rủi ro</th><th class="tight">Mức độ</th><th class="tight">Khả năng</th><th>Giảm thiểu</th></tr></thead>
+<tbody>
+<tr><td class="k">R1</td><td><strong>Vực thẳm giữ chân.</strong> Sinh plan xong, thấy hay, không bao giờ quay lại — failure mode giết mọi study planner</td><td><span class="sev hi">Nghiêm trọng</span></td><td><span class="sev hi">Cao</span></td><td>Learning Pack <em>là</em> sản phẩm, không phải plan · pre-generate ngày kế · nhắc học ở v1.1 · đo H2 trên mọi chỉ số khác</td></tr>
+<tr><td class="k">R2</td><td><strong>Chất lượng trích xuất slide.</strong> Deck AI/ML nhiều sơ đồ, ít chữ</td><td><span class="sev hi">Cao</span></td><td><span class="sev hi">Cao</span></td><td>Phát hiện mật độ chữ + cảnh báo trung thực · ưu tiên PPTX · cho sửa ranh giới section · vision là mục v1.1 số một · <strong>chạy spike S1 trước Stage 2</strong></td></tr>
+<tr><td class="k">R3</td><td><strong>Đáp án quiz sai.</strong> Phá huỷ lòng tin tức thì và không hồi phục</td><td><span class="sev hi">Cao</span></td><td><span class="sev md">TB</span></td><td>Bắt buộc sourceSpan · pipeline validate · nút báo sai · hàng đợi review · thà ít câu còn hơn câu sai</td></tr>
+<tr><td class="k">R4</td><td><strong>Bài giảng bỏ sót chi tiết quan trọng cho bài thi</strong></td><td><span class="sev hi">Cao</span></td><td><span class="sev md">TB</span></td><td>Pass kiểm tra phủ MUST_KNOW · định vị companion chứ không thay thế · panel slide luôn cạnh bên</td></tr>
+<tr><td class="k">R5</td><td><strong>Mapping sai</strong> → ưu tiên lệch, coverage sai</td><td><span class="sev hi">Cao</span></td><td><span class="sev md">TB</span></td><td>Ngưỡng confidence · có ô "chưa map được" thay vì ép map · người dùng sửa thứ tự được · luôn ghi "ước tính"</td></tr>
+<tr><td class="k">R6</td><td><strong>Chi phí LLM mỗi người dùng.</strong> Ước tính sơ bộ 200–400k token cho một plan hoàn chỉnh</td><td><span class="sev md">TB-Cao</span></td><td><span class="sev hi">Cao</span></td><td>Sinh lười (chỉ ngày N+1) · cache · giới hạn số plan/tài khoản · model rẻ cho lọc keyword và cấu trúc, model mạnh cho bài giảng và quiz · <strong>spike S4 đo con số thật</strong></td></tr>
+<tr><td class="k">R7</td><td><strong>Thời gian xử lý upload dài</strong> ở lần dùng đầu tiên</td><td><span class="sev md">TB</span></td><td><span class="sev hi">Cao</span></td><td>Job async + tiến trình theo section · <strong>Capacity Check giao giá trị trước khi xử lý xong</strong></td></tr>
+<tr><td class="k">R8</td><td><strong>Bản quyền</strong> tài liệu khóa học trả phí</td><td><span class="sev hi">Cao</span> (pháp lý)</td><td><span class="sev lo">Thấp-TB</span></td><td>Riêng tư tuyệt đối, không share · kiểm tra trùng n-gram · xác nhận quyền truy cập · kênh gỡ bỏ · không xuất file gốc</td></tr>
+<tr><td class="k">R9</td><td><strong>Exam dump</strong> lọt vào qua đường upload</td><td><span class="sev hi">Cao</span></td><td><span class="sev md">TB</span></td><td>Heuristic chặn lúc upload · điều khoản rõ ràng · không có tính năng chia sẻ để lan truyền</td></tr>
+<tr><td class="k">R10</td><td><strong>Exam đổi version</strong> giữa chừng</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Pin version · thông báo + diff · replan chỉ phần còn lại</td></tr>
+<tr><td class="k">R11</td><td><strong>Chất lượng tiếng Việt kỹ thuật.</strong> Dịch cứng, thuật ngữ không nhất quán</td><td><span class="sev md">TB-Cao</span></td><td><span class="sev md">TB</span></td><td>Style guide trong prompt · glossary theo plan · giữ nguyên thuật ngữ tiếng Anh · <strong>người Việt đọc duyệt N bài giảng đầu trước khi mở</strong> · spike S2</td></tr>
+<tr><td class="k">R12</td><td><strong>Phình scope, không bao giờ ship.</strong> Bề rộng của brief gốc làm rủi ro này rất thật</td><td><span class="sev hi">Nghiêm trọng</span></td><td><span class="sev hi">Cao</span></td><td>Chính tài liệu này · cơ chế stage gate · vertical slice chạy được độc lập · danh sách loại bỏ ở mục 25 là ràng buộc, không phải gợi ý</td></tr>
+<tr><td class="k">R13</td><td><strong>Người dùng upload nhầm tài liệu</strong> (sai cert, sai version)</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Tỉ lệ map thấp bất thường → cảnh báo ngay, không âm thầm tạo plan rác</td></tr>
+<tr><td class="k">R14</td><td><strong>Thiên kiến validation.</strong> Người xây là người dùng đầu tiên</td><td><span class="sev md">TB</span></td><td><span class="sev hi">Cao</span></td><td>Tuyển 5–10 người học Việt có lịch thi thật trước khi làm v1.1 · đừng chỉ tin cảm nhận của chính mình</td></tr>
+<tr><td class="k">R15</td><td><strong>Sản phẩm báo tin xấu</strong> ("không đủ thời gian") ngay lúc onboarding</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Trình bày như trao quyền (3 lựa chọn cụ thể), không như thất bại. Đây thực ra là khoảnh khắc tạo lòng tin nếu làm đúng.</td></tr>
+<tr><td class="k">R16</td><td><strong>Độ trễ sinh bài giảng</strong> làm gián đoạn buổi học</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Pre-generate ngày kế tiếp · stream nếu buộc phải sinh nóng</td></tr>
+<tr><td class="k">R17</td><td><strong>Structured output parse lỗi</strong></td><td><span class="sev lo">Thấp-TB</span></td><td><span class="sev md">TB</span></td><td>Validate schema · retry kèm phản hồi lỗi · fallback xác định</td></tr>
+<tr><td class="k">R18</td><td><strong>An toàn dữ liệu upload</strong></td><td><span class="sev md">TB</span></td><td><span class="sev lo">Thấp</span></td><td>Lưu riêng tư, signed URL, mã hoá khi lưu, xoá theo yêu cầu, không train</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="s27">
+<h2 class="sec"><i>27</i>Success Criteria</h2>
+<p class="kicker">Đo được, không phải vanity metric.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Giai đoạn</th><th>Tiêu chí</th><th class="tight">Ngưỡng MVP</th></tr></thead>
+<tbody>
+<tr><td class="k">Setup</td><td>Tỉ lệ onboarding bắt đầu → có plan hoàn chỉnh</td><td class="num">≥ 70%</td></tr>
+<tr><td class="k">Setup</td><td>Thời gian trung vị từ đăng ký đến có plan (gồm cả xử lý file)</td><td class="num">&lt; 15 phút</td></tr>
+<tr><td class="k">Setup</td><td>Người dùng không phải tự chia syllabus hay tự tra exam guide</td><td class="num">100%</td></tr>
+<tr><td class="k">Kích hoạt</td><td>Có plan → hoàn thành Ngày 1 trong 24h</td><td class="num">≥ 60%</td></tr>
+<tr><td class="k"><strong>Giữ chân</strong></td><td><strong>Hoàn thành Ngày 1 → hoàn thành Ngày 2 trong 48h</strong> <em>(chỉ số quyết định)</em></td><td class="num">≥ 50%</td></tr>
+<tr><td class="k">Giữ chân</td><td>Hoàn thành từ 5 ngày học trở lên</td><td class="num">≥ 30%</td></tr>
+<tr><td class="k">Chất lượng học</td><td>"Bài giảng tiếng Việt dễ hiểu hơn slide gốc" — hỏi một câu trong app sau ngày 3</td><td class="num">≥ 60%</td></tr>
+<tr><td class="k">Chất lượng AI</td><td>Tỉ lệ câu quiz bị báo sai / không liên quan</td><td class="num">&lt; 5%</td></tr>
+<tr><td class="k">Chất lượng AI</td><td>Tỉ lệ khối bài giảng bị báo sai</td><td class="num">&lt; 3%</td></tr>
+<tr><td class="k">Chính xác</td><td>Ma trận coverage khớp với review thủ công của người am hiểu, ở mức task statement</td><td class="num">≥ 85%</td></tr>
+<tr><td class="k">Thích ứng</td><td>Mọi ngày bị bỏ đều kích hoạt một replan <em>nhìn thấy được</em></td><td class="num">100%</td></tr>
+<tr><td class="k">Thích ứng</td><td>Có ≥1 block ôn topic yếu được chèn, tính đến ngày 5</td><td class="num">≥ 60% users</td></tr>
+<tr><td class="k">Truy vết</td><td>Study unit hiển thị đúng file + page range</td><td class="num">100%</td></tr>
+<tr><td class="k">Truy vết</td><td>Factual item official có link nguồn</td><td class="num">100%</td></tr>
+<tr><td class="k">Kết quả <em>(trễ)</em></td><td>Người dùng báo đã đậu — không phải cổng MVP, nhưng là chỉ số thật duy nhất về lâu dài</td><td class="num">Theo dõi</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout stop">
+<span class="lab">Không đo những thứ này như thước đo thành công</span>
+<p>Số lượng tính năng AI · số token tiêu thụ · số plan được sinh ra · lượt xem trang · số đăng ký. Tất cả đều có thể tăng trong khi sản phẩm đang chết.</p>
+</div>
+</section>
+
+<span class="part">Phần V — Kiểm chứng &amp; chốt</span>
+
+<section id="s28">
+<h2 class="sec"><i>28</i>Walkthrough thật — AIF-C01</h2>
+<p class="kicker">Kịch bản dùng đúng số liệu trong brief. Nó vô tình là một stress case tốt.</p>
+
+<div class="flow">Certification   AWS Certified AI Practitioner (AIF-C01)
+Tài liệu        Slide khóa học, ~320 trang PDF
+Hôm nay         29 / 08 / 2026
+Ngày thi        10 / 09 / 2026        ← chỉ còn 12 ngày
+Giờ rảnh        4h / ngày
+
+→ Số ngày học: 30/08 – 09/09 = 11 ngày · Capacity = 44h
+→ Trừ cửa sổ ôn tập 2 ngày → 9 ngày nội dung (36h) + 8h ôn
+→ Ước tính effort đầy đủ ≈ 46h  →  effortRatio = 1.28
+→ CHẾ ĐỘ NÉN KÍCH HOẠT ngay tại bước Capacity Check</div>
+
+<p>Đây là kịch bản đáng giá nhất để mô phỏng: nó buộc sản phẩm phải nói thật ngay ở phút thứ hai, thay vì vẽ ra một kế hoạch đẹp đẽ không khả thi.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Bước</th><th>Người dùng làm</th><th>Hệ thống làm</th><th class="tight">AI</th><th class="tight">Code</th><th>Nguồn</th><th>Người dùng thấy</th></tr></thead>
+<tbody>
+<tr><td class="k">1</td><td>Đăng ký, chọn "AWS Certified AI Practitioner" từ catalog</td><td>Nạp CertificationVersion AIF-C01 đã pin, kèm 5 domain và trọng số</td><td class="tight">—</td><td class="tight">✓</td><td>Exam guide chính thức (đã curate, có link)</td><td>5 domain + trọng số + thời lượng thi + số câu, mỗi mục có link nguồn</td></tr>
+<tr><td class="k">2</td><td>Nhập ngày thi 10/09/2026, 4h/ngày, không có ngày nghỉ</td><td>Tính 11 ngày khả dụng · 44h · cửa sổ ôn 2 ngày</td><td class="tight">—</td><td class="tight">✓</td><td>—</td><td><strong>Capacity Check:</strong> "11 ngày × 4h = 44h. Chứng chỉ này thường cần 40–60h. Sát nút — tải tài liệu lên để biết chính xác."  <em>← giá trị đầu tiên, ~8 giây</em></td></tr>
+<tr><td class="k">3</td><td>Upload slide PDF 320 trang</td><td>Trích text theo trang, font metrics, bookmark; phát hiện 18 trang mật độ chữ thấp</td><td class="tight">—</td><td class="tight">✓</td><td>File người dùng</td><td>Thanh tiến trình + cảnh báo: "18 trang chủ yếu là sơ đồ — bài giảng phần đó sẽ mỏng hơn"</td></tr>
+<tr><td class="k">4</td><td>Chờ ~2–4 phút</td><td>Dựng cấu trúc → validate page range → map vào task statement → coverage matrix → ước lượng effort → chuẩn hoá</td><td class="tight">✓</td><td class="tight">✓</td><td>File + blueprint</td><td>Tên section hiện dần: <em>AI &amp; ML Fundamentals · Generative AI · Prompt Engineering · Amazon Bedrock · SageMaker · Responsible AI · Security &amp; Governance…</em></td></tr>
+<tr><td class="k">5</td><td>Xem coverage, tick "AI/ML Fundamentals — tôi đã biết cơ bản"</td><td>Coverage 88% ước tính · phát hiện 2 task statement NOT_COVERED · nén lại theo phần đã biết</td><td class="tight">✓ map</td><td class="tight">✓ coverage</td><td>Blueprint + khóa học</td><td>Ma trận theo domain · 2 lỗ hổng nêu tên · "Khóa của bạn không đề cập rõ <em>AWS AI service card</em> và <em>model evaluation metrics</em> — đã thêm 2 block ngắn kèm link tài liệu chính thức"</td></tr>
+<tr><td class="k">6</td><td>Bấm "Tạo kế hoạch"</td><td>Effort 46h &gt; 36h → thang nén: bỏ OPTIONAL, hạ LOW</td><td class="tight">—</td><td class="tight">✓</td><td>—</td><td><strong>Nói thật:</strong> "Không đủ thời gian cho toàn bộ khóa học. Đã ưu tiên nội dung chiếm 91% trọng số bài thi và bỏ 4 chủ đề ngoài phạm vi (xem danh sách). Ba lựa chọn: tăng lên 5h/ngày · dời ngày thi · tiếp tục theo chế độ ưu tiên."</td></tr>
+<tr><td class="k">7</td><td>Chọn "tiếp tục theo chế độ ưu tiên"</td><td>Sinh 11 StudyDay; pre-generate Learning Pack Ngày 1</td><td class="tight">✓ pack</td><td class="tight">✓ lịch</td><td>—</td><td>Lịch 11 ngày. <strong>Ngày 1 (30/08):</strong> AI/ML Fundamentals nén lại, slide 12–48 → 75 phút · ML Types &amp; Terminology, slide 49–82 → 85 phút · Generative AI mở đầu, slide 83–104 → 60 phút · quiz 25 phút</td></tr>
+<tr><td class="k">8</td><td>Sáng 30/08 mở app, bấm "Bắt đầu"</td><td>Trả về Learning Pack đã sinh sẵn — không phải chờ</td><td class="tight">—</td><td class="tight">✓</td><td>—</td><td>Không có màn hình chờ</td></tr>
+<tr><td class="k">9</td><td>Đọc Unit 1</td><td>—</td><td class="tight">✓</td><td class="tight">—</td><td>Slide 12–48 + Domain 1 (20%)</td><td>Mục tiêu · bài giảng tiếng Việt · keyword giải thích tại chỗ (<em>overfitting, feature, label, inference, training</em>) · chuỗi quan hệ <code>AI → ML → Deep Learning → Foundation Model → LLM</code> · nhãn <strong>Ngữ cảnh thi:</strong> "Với AIF-C01, bạn cần <em>nhận diện</em> loại bài toán ML phù hợp với tình huống. Không cần công thức toán." · panel slide gốc mở cạnh bên</td></tr>
+<tr><td class="k">10</td><td>Đọc Unit 2</td><td>—</td><td class="tight">✓</td><td class="tight">—</td><td>Slide 49–82</td><td>Bảng so sánh tự phát sinh: <em>Supervised vs Unsupervised vs Reinforcement</em> và <em>Classification vs Regression</em> — vì hệ thống nhận ra đây là cặp dễ nhầm</td></tr>
+<tr><td class="k">11</td><td>Làm quiz 8 câu</td><td>Sinh, validate 8/9 câu (1 câu bị loại vì không có sourceSpan), chấm</td><td class="tight">✓ sinh</td><td class="tight">✓ validate + chấm</td><td>Slide hôm nay + task statement</td><td>6/8. Sai: <em>overfitting</em> và <em>một use case của reinforcement learning</em>. Mỗi câu có giải thích + vì sao 3 đáp án kia sai + nhãn "do AI tạo"</td></tr>
+<tr><td class="k">12</td><td>Bấm "Hoàn thành ngày"</td><td>Tầng 1 kích hoạt: 2 concept MUST_KNOW sai → đưa vào warm-up ngày mai. Tầng 2 chưa kích hoạt (mới 1 câu/topic, cần ≥3)</td><td class="tight">—</td><td class="tight">✓</td><td>—</td><td>Ngày 1 ✓ · Domain 1: 75% · Ngày mai: warm-up 3 câu (gồm 2 câu sai hôm nay) rồi Generative AI Fundamentals slide 105–150</td></tr>
+<tr><td class="k">13</td><td>—</td><td>Pre-generate Learning Pack Ngày 2 ở background</td><td class="tight">✓</td><td class="tight">✓</td><td>—</td><td>Không thấy gì — đó là điểm mấu chốt</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+<span class="lab">Lỗ hổng scope mà walkthrough này phát hiện</span>
+<ul>
+<li><strong>Quy tắc topic yếu không kích hoạt được trong tuần đầu</strong> (1 câu/topic &lt; ngưỡng 3 câu) → đã sửa bằng cơ chế hai tầng ở mục 15. Nếu không mô phỏng, lỗi này lọt tới production.</li>
+<li><strong>Deadline ngắn là trường hợp thường gặp, không phải ngoại lệ.</strong> Người ta tìm tới công cụ lập lịch <em>khi đã trễ</em>. Chế độ nén và thông điệp trung thực phải nằm trong MVP, không phải hoãn lại.</li>
+<li><strong>Thiếu bài thi thử trước ngày thi</strong> → đã bổ sung Final Review Exam lắp từ bank (mục 13).</li>
+<li><strong>Người dùng cần biết mình đã bỏ gì</strong> khi ở chế độ nén → cần một danh sách "nội dung đã lược bỏ" xem lại được ở màn hình Plan.</li>
+</ul>
+</div>
+</section>
+
+<section id="s29">
+<h2 class="sec"><i>29</i>Open Questions &amp; Assumptions</h2>
+<p class="kicker">Các giả định đã tự quyết để không chặn tiến độ, kèm mặc định đề xuất.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Giả định</th><th>Mặc định đề xuất</th><th>Lý do</th><th class="tight">Cần chốt?</th></tr></thead>
+<tbody>
+<tr><td class="k">A1</td><td>Ngôn ngữ đầu ra</td><td>Chỉ tiếng Việt, một mode duy nhất</td><td>Chính là value proposition; thêm ngôn ngữ là thêm biến vào mọi phép đo chất lượng</td><td class="tight">Trước v1.1</td></tr>
+<tr><td class="k">A2</td><td>Vai trò của Learning Pack</td><td><strong>Companion đi kèm slide</strong>, không phải bản thay thế</td><td>Giảm rủi ro sót chi tiết, giảm rủi ro bản quyền, giảm chi phí (mục 12)</td><td class="tight"><strong>Có — D1</strong></td></tr>
+<tr><td class="k">A3</td><td>Tài liệu bắt buộc</td><td>Bắt buộc để tạo plan</td><td>Không có tài liệu thì sản phẩm tụt xuống mức ChatGPT làm được</td><td class="tight"><strong>Có — D2</strong></td></tr>
+<tr><td class="k">A4</td><td>Số plan đồng thời</td><td>Một active plan / user</td><td>Chia capacity giữa nhiều plan là hệ số nhân phức tạp</td><td class="tight">Rủi ro thấp</td></tr>
+<tr><td class="k">A5</td><td>Catalog lúc ra mắt</td><td>AIF-C01 duy nhất; +2 trong tháng đầu</td><td>Chiều sâu trước chiều rộng; chứng minh không hard-code AWS bằng Azure AI-900 chứ không bằng lời nói</td><td class="tight"><strong>Có — D4</strong></td></tr>
+<tr><td class="k">A6</td><td>Ngày thi</td><td>Bắt buộc (có thể là ngày mục tiêu)</td><td>Deadline là động cơ của cả sản phẩm; không có nó thì người dùng churn</td><td class="tight">Rủi ro thấp</td></tr>
+<tr><td class="k">A7</td><td>Search lúc chạy</td><td>Không có</td><td>Tính đúng đắn + chi phí (mục 18)</td><td class="tight">Rủi ro thấp</td></tr>
+<tr><td class="k">A8</td><td>Vector DB</td><td>Không có trong MVP</td><td>Truy cập theo page range (mục 17)</td><td class="tight">Rủi ro thấp</td></tr>
+<tr><td class="k">A9</td><td>Bài thi thử</td><td>Có — lắp từ bank câu hỏi</td><td>Gần như miễn phí, và thiếu nó là lỗ hổng ngay trước khoảnh khắc quan trọng nhất</td><td class="tight"><strong>Có — D5</strong></td></tr>
+<tr><td class="k">A10</td><td>Vision cho slide sơ đồ</td><td>v1.1, kích hoạt có chọn lọc theo ngưỡng mật độ chữ</td><td>Giới hạn chi phí ở ~10–20% số trang; nhưng <strong>phải chạy spike S1 trước</strong> để biết mức độ nghiêm trọng thật</td><td class="tight">Sau spike</td></tr>
+<tr><td class="k">A11</td><td>Xoá file gốc</td><td>Giữ bài giảng của ngày đã hoàn thành; panel slide ngừng hoạt động; có hành động "xoá toàn bộ" riêng</td><td>Bài giảng là hồ sơ học tập của người dùng và là nội dung đã biến đổi</td><td class="tight"><strong>Có — D10</strong></td></tr>
+<tr><td class="k">A12</td><td>Kiếm tiền</td><td>Không có UI thanh toán trong MVP</td><td>Nhưng <em>hình thái</em> (credit theo plan vs thuê bao) ảnh hưởng trần chi phí và giới hạn sinh nội dung</td><td class="tight"><strong>Có — D6</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Câu hỏi mở chưa có mặc định</h3>
+<ul>
+<li>Người dùng có chấp nhận đọc bài giảng tiếng Việt <em>song song</em> với slide tiếng Anh, hay họ kỳ vọng bỏ hẳn slide? Cách trả lời duy nhất là quan sát 5 người học thật — không phải suy luận.</li>
+<li>Với deck dày (300+ slide), người dùng có thực sự mở panel slide gốc không, hay họ chỉ tin bài giảng? Điều này quyết định mức độ đầu tư vào tính đầy đủ của bài giảng.</li>
+<li>Sau lần replan đầu tiên, người dùng cảm thấy được giúp đỡ hay bị phán xét? Câu chữ ở đây quan trọng ngang thuật toán.</li>
+<li>Chứng chỉ thứ hai nên là AWS CLF-C02 (cùng tệp, dễ) hay Azure AI-900 (khác nhà cung cấp, kiểm chứng giả định generic)? Nghiêng về Azure — nó kiểm chứng một rủi ro kiến trúc, cái kia thì không.</li>
+</ul>
+</section>
+
+<section id="s30">
+<h2 class="sec"><i>30</i>Decisions — đã chốt</h2>
+<p class="kicker">D1–D7 đã được chốt ngày 30/08/2026 và trở thành ràng buộc đầu vào cho Stage 2. D8–D10 mở lúc bắt đầu Stage 2.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Quyết định</th><th>Đã chốt</th><th>Ràng buộc kéo sang Stage 2</th></tr></thead>
+<tbody>
+<tr><td class="k">D1</td><td>Learning Pack là companion hay bản thay thế?</td><td><span class="chip c-must">Companion</span></td><td>Mọi content block phải trace được về <code>sourceSpan</code> / page / slide. Panel tài liệu gốc là thành phần bắt buộc của màn hình Today.</td></tr>
+<tr><td class="k">D2</td><td>Upload tài liệu bắt buộc?</td><td><span class="chip c-must">Bắt buộc</span></td><td>Không có nhánh "generic plan". <code>StudyPlan</code> không thể ACTIVE nếu chưa có material READY.</td></tr>
+<tr><td class="k">D3</td><td>Learning mode</td><td><span class="chip c-must">Một mode — Exam Focus</span></td><td>Một prompt family duy nhất; không có tham số mode trong domain model (nhưng promptVersion vẫn được version hoá).</td></tr>
+<tr><td class="k">D4</td><td>Catalog</td><td><span class="chip c-must">Curated · chỉ AIF-C01</span></td><td>Data model phải generic cho mọi certification. <strong>Không hard-code AWS/AIF-C01 ở bất kỳ đâu ngoài dữ liệu seed.</strong> Catalog là dữ liệu, không phải code.</td></tr>
+<tr><td class="k">D5</td><td>Final Review Exam</td><td><span class="chip c-must">Có, lắp từ bank</span></td><td>Chọn câu deterministic theo trọng số domain/topic. Không phải exam simulator riêng — dùng lại <code>QuizAttempt</code> với <code>kind = FINAL_REVIEW</code>.</td></tr>
+<tr><td class="k">D6</td><td>Trần chi phí AI</td><td><span class="chip c-must">≤ $5/plan target · $10 cảnh báo</span></td><td>Bắt buộc có: model routing · reuse kết quả phân tích · cache theo input hash · không regenerate khi input không đổi · pre-generate có kiểm soát · cost ledger theo operation và theo plan. <em>Tạm tính, cập nhật sau spike S1/S4.</em></td></tr>
+<tr><td class="k">D7</td><td>Đội &amp; timeline</td><td><span class="chip c-must">1 dev chính · 6–8 tuần</span></td><td>Modular monolith. Không microservices, không hạ tầng thừa. API contract đủ tốt để mobile dùng lại.</td></tr>
+<tr><td class="k">D8</td><td>Hạ tầng triển khai, vùng, ngân sách</td><td><span class="chip c-should">Mở tại Stage 2</span></td><td>Ảnh hưởng lựa chọn object storage và chi phí vận hành</td></tr>
+<tr><td class="k">D9</td><td>B2B trong 12 tháng?</td><td><span class="chip c-should">Mở tại Stage 2</span></td><td>Nếu có, chừa chỗ cho khái niệm tổ chức trong data model — rẻ lúc này, rất đắt về sau</td></tr>
+<tr><td class="k">D10</td><td>Xoá file gốc</td><td><span class="chip c-should">Mở tại Stage 2</span></td><td>Mặc định đề xuất: giữ bài giảng ngày đã hoàn thành, panel slide ngừng hoạt động, có hành động "xoá toàn bộ" riêng</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Bốn spike nên chạy trước hoặc song song với Stage 2</h3>
+<p>Bốn thí nghiệm này khử rủi ro cho gần như toàn bộ sản phẩm, tốn khoảng ba ngày công, và trả lời những câu hỏi mà không lượng thiết kế kiến trúc nào trả lời được:</p>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Spike</th><th>Đo cái gì</th><th class="tight">Công</th><th>Trả lời câu hỏi</th></tr></thead>
+<tbody>
+<tr><td class="k">S1</td><td>Trích xuất deck AIF-C01 thật (cả PDF lẫn PPTX nếu có)</td><td>% trang lấy được text hữu ích · tỉ lệ nhận diện đúng ranh giới section</td><td class="num">1 ngày</td><td>Vision có phải là hạng mục MVP thay vì v1.1 không? (R2)</td></tr>
+<tr><td class="k">S2</td><td>Sinh một bài giảng tiếng Việt từ ~35 slide</td><td>Người học Việt thật đánh giá: dễ hiểu hơn slide gốc không?</td><td class="num">1 ngày</td><td>Value proposition số 2 có đứng vững không? (R11)</td></tr>
+<tr><td class="k">S3</td><td>Sinh 10 câu quiz kèm sourceSpan</td><td>Tỉ lệ đáp án đúng thật sự · tỉ lệ câu bị pipeline loại</td><td class="num">0.5 ngày</td><td>Cổng validate có đủ chặt không? (R3)</td></tr>
+<tr><td class="k">S4</td><td>Đo token của S1–S3</td><td>Ngoại suy chi phí cho một plan hoàn chỉnh</td><td class="num">0.5 ngày</td><td>Chốt D6 · quyết định chiến lược model</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="gate">
+<div class="gate">
+  <div class="gate-hd"><span>Product Scope Review Gate</span><span>Stage 1 → Stage 2</span></div>
+  <div class="gate-bd">
+    <dl>
+      <dt>Product</dt>
+      <dd><strong>Cert Study Copilot</strong> — một material-driven, deadline-driven study planner sinh ra bài học tiếng Việt hằng ngày từ chính tài liệu của người học, kiểm tra bằng quiz có grounding, và tự điều chỉnh lịch còn lại. Web trước, mobile sau.</dd>
+
+      <dt>Primary user</dt>
+      <dd>Kỹ sư IT người Việt đi làm, tự học chứng chỉ cloud/IT, <strong>có ngày thi trong 3–12 tuần</strong>, <strong>đã sở hữu một khóa học hoặc bộ slide</strong>, và <strong>đọc tiếng Anh được nhưng tốn sức</strong>. Thiếu một trong ba điều kiện → không phải primary user.</dd>
+
+      <dt>Core value</dt>
+      <dd>
+        <p><strong>1.</strong> Trạng thái liên tục và ràng buộc lịch do code đảm bảo — thứ ChatGPT về cấu trúc không có.</p>
+        <p><strong>2.</strong> Tài liệu của bạn là xương sống của mọi ngày học, truy vết được tới từng page range.</p>
+        <p><strong>3.</strong> Không phải ra quyết định nào để bắt đầu học.</p>
+        <p><em>Kế hoạch là cái móc câu; bài học hằng ngày mới là sản phẩm.</em></p>
+      </dd>
+
+      <dt>Recommended MVP</dt>
+      <dd>
+        <p>Bảy năng lực:</p>
+        <ul>
+          <li><strong>M1</strong> Setup + Capacity Reality Check (giá trị đầu tiên dưới 10 giây)</li>
+          <li><strong>M2</strong> Hiểu tài liệu — PDF/PPTX, cấu trúc có page range, cảnh báo trung thực</li>
+          <li><strong>M3</strong> Map vào exam scope + ma trận coverage + phát hiện lỗ hổng</li>
+          <li><strong>M4</strong> Lập lịch deterministic theo khối lượng tài liệu thật</li>
+          <li><strong>M5</strong> Daily Learning Pack tiếng Việt, khối có kiểu, kèm panel slide gốc</li>
+          <li><strong>M6</strong> Quiz có grounding (bắt buộc sourceSpan) + Final Review Exam từ bank</li>
+          <li><strong>M7</strong> Tiến độ deterministic + phát hiện topic yếu 2 tầng + replan 4 trigger</li>
+        </ul>
+        <p>Bảy màn hình web. Một active plan mỗi user. Một chứng chỉ lúc ra mắt.</p>
+      </dd>
+
+      <dt>Explicitly excluded</dt>
+      <dd>Tìm kiếm web lúc chạy · auto-discovery chứng chỉ · chat tự do · Deep Dive và Direct Translation mode · trình độ tự đánh giá · confidence tự chấm · suy luận prerequisite · sơ đồ render · DOCX/MD/TXT/transcript · nhiều plan song song · thông báo · dự đoán xác suất đậu · exam dump · LMS/org/cohort · quản lý tài liệu · marketplace · mobile.<br><em>Vector DB: not required for MVP</em> — không implement, nhưng kiến trúc không được chặn việc bổ sung semantic retrieval sau này.</dd>
+
+      <dt>Critical decisions</dt>
+      <dd>
+        <ul>
+          <li>Upload tài liệu <strong>bắt buộc</strong> — không có nó sản phẩm không có lý do tồn tại</li>
+          <li>Catalog curate thay cho auto-discovery — chính xác hơn <em>và</em> rẻ hơn ở quy mô 1–3 chứng chỉ</li>
+          <li>Không vector DB — truy cập là theo page range, không phải ngữ nghĩa</li>
+          <li>LLM không bao giờ chạm vào lịch, điểm, trạng thái, hay ràng buộc</li>
+          <li>Mọi câu quiz phải có <code>sourceSpan</code>, không thì bị loại</li>
+          <li>Bài giảng là <strong>khối có kiểu</strong> — để mobile dùng lại và để validate được</li>
+          <li>Pre-generate ngày kế tiếp — người dùng không bao giờ chờ AI</li>
+          <li>Khi không đủ thời gian: nói thật và trao ba lựa chọn, không âm thầm cắt</li>
+        </ul>
+      </dd>
+
+      <dt>Locked decisions</dt>
+      <dd><strong>Đã chốt 30/08/2026:</strong> D1 companion · D2 tài liệu bắt buộc · D3 một mode <em>Exam Focus</em> · D4 curated catalog chỉ AIF-C01 (model generic) · D5 Final Review Exam từ bank · D6 ≤$5/plan target, $10 cảnh báo, bắt buộc cost observability · D7 1 dev chính, 6–8 tuần, modular monolith.<br><strong>Mở tại Stage 2:</strong> D8 hạ tầng · D9 B2B trong 12 tháng · D10 chính sách xoá file.<br><strong>Nên chạy song song:</strong> spike S1–S4, khoảng 3 ngày công — kết quả sẽ hiệu chỉnh lại trần chi phí D6.</dd>
+
+      <dt>Next stage</dt>
+      <dd><strong>SYSTEM DESIGN</strong> — kiến trúc Java backend và React web, ranh giới module, domain model, ERD, thiết kế API, xử lý tài liệu, điều phối AI, bảo mật, kiểm thử, triển khai.</dd>
+
+      <dt>Ready for architecture</dt>
+      <dd><span class="verdict">YES — approved</span><br>Product Scope v1 đã chốt. Stage 2 nhận D1–D7 làm ràng buộc đầu vào cứng.</dd>
+    </dl>
+  </div>
+</div>
+
+<p class="foot">Product Scope v1 — chốt ngày 30/08/2026. Tài liệu này là nguồn tham chiếu cho Stage 2; mọi quyết định kiến trúc phải truy về được một mục trong đây.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function(a){
+    var el = document.querySelector(a.getAttribute('href'));
+    if (el) map[a.getAttribute('href').slice(1)] = a;
+  });
+  if (!('IntersectionObserver' in window)) return;
+  var current = null;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        if (current) current.classList.remove('on');
+        current = map[e.target.id];
+        if (current) current.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+})();
+</script>

@@ -1,0 +1,10 @@
+app:
+  worker:
+    enabled: false
+  storage:
+    # Small enough that the server-side size cap can be tested without allocating
+    # the production limit; every fixture deck is far below it.
+    max-upload-bytes: 8388608
+logging:
+  level:
+    com.certcopilot: INFO

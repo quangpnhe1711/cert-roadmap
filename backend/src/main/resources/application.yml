@@ -1,0 +1,111 @@
+spring:
+  application:
+    name: certcopilot-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/certcopilot}
+    username: ${DB_USER:certcopilot}
+    password: ${DB_PASSWORD:certcopilot}
+    hikari:
+      maximum-pool-size: 10
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+  jackson:
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 210MB
+
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  storage:
+    adapter: local
+    local-root: ./var/storage
+  auth:
+    jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789-0123456789}
+  # Worker and API live in one deployable. Splitting them later is these two
+  # flags, not a code change (System Design, section 10).
+  worker:
+    enabled: true
+    poll-interval-ms: 500
+    batch-size: 5
+    lease-duration-ms: 120000
+    heartbeat-interval-ms: 30000
+    recovery-interval-ms: 15000
+    threads: 4
+  ai:
+    # Deterministic offline adapter. A real provider adapter is selected by
+    # setting app.ai.adapter to its name; nothing in the domain changes.
+    adapter: ${AI_ADAPTER:fake}
+    prompt-hot-reload: ${PROMPT_HOT_RELOAD:true}
+    default-hard-cap-cents: 1000
+    default-soft-cap-cents: 500
+    reservation-ttl-ms: 300000
+    # Published provider prices, cents per million tokens, keyed by model id.
+    # Left unset on purpose: an invented price produces a cost report that looks
+    # authoritative and is a guess. With no entry the tier estimate above is used
+    # and the report says so. Fill this in from the provider's price page before
+    # treating any cost number as measured.
+    #   model-prices:
+    #     claude-sonnet-5:
+    #       input-cents-per-million: 0
+    #       output-cents-per-million: 0
+    provider:
+      # Only read when app.ai.adapter=anthropic. That adapter refuses to start
+      # without a key, so a missing credential fails at boot rather than at the
+      # first learner's first lesson.
+      base-url: ${AI_BASE_URL:https://api.anthropic.com}
+      api-key: ${ANTHROPIC_API_KEY:}
+      request-timeout-ms: ${AI_REQUEST_TIMEOUT_MS:120000}
+      max-transport-attempts: 3
+      log-provider-messages: false
+      models:
+        FAST: ${AI_MODEL_FAST:claude-haiku-4-5-20251001}
+        QUALITY: ${AI_MODEL_QUALITY:claude-sonnet-5}
+      # Only read when app.ai.adapter=gemini. Same rule: no key, no boot.
+      gemini:
+        base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+        api-version: ${GEMINI_API_VERSION:v1beta}
+        api-key: ${GEMINI_API_KEY:}
+        request-timeout-ms: ${AI_REQUEST_TIMEOUT_MS:120000}
+        # Five, not three: the free tier limits requests per minute and a plan is
+        # dozens of calls, so a run that gives up after two waits reports an outage
+        # when the next minute simply had not started. A 429 spends no tokens.
+        max-transport-attempts: ${GEMINI_MAX_TRANSPORT_ATTEMPTS:5}
+        # A 429 carries the exact time the quota window reopens. Honouring it is
+        # bounded here rather than by max-backoff-ms, which caps our own guesses:
+        # a free-tier limit that reopens in 48s cannot be waited out in 8.
+        max-retry-after-ms: ${GEMINI_MAX_RETRY_AFTER_MS:90000}
+        log-provider-messages: false
+        models:
+          FAST: ${GEMINI_FAST_MODEL:gemini-3.5-flash-lite}
+          QUALITY: ${GEMINI_QUALITY_MODEL:gemini-3.7-flash}
+        # Gemini bills thinking tokens as output tokens and counts them against
+        # max_output_tokens, so an unbudgeted model can spend a lesson's whole
+        # allowance reasoning and return nothing. NONE | LOW | HIGH | BUDGET:<n>.
+        # A BUDGET is added on top of the operation's own ceiling.
+        # The 3.x lite models accept thinkingLevel but reject thinkingBudget;
+        # the flash and 2.5 models accept the budget. Change model, check this.
+        thinking:
+          FAST: ${GEMINI_FAST_THINKING:LOW}
+          QUALITY: ${GEMINI_QUALITY_THINKING:BUDGET:0}
+
+logging:
+  level:
+    com.certcopilot: DEBUG

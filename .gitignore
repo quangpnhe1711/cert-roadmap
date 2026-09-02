@@ -1,0 +1,19 @@
+target/
+node_modules/
+dist/
+.idea/
+*.iml
+.env
+.env.local
+*.log
+tools/
+test-results/
+playwright-report/
+.playwright/
+var/
+.jqwik-database
+tsconfig.tsbuildinfo
+
+# Local development data: generated sample deck and uploaded files.
+local-data/
+!local-data/.gitkeep

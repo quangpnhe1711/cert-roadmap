@@ -1,0 +1,41 @@
+# Local development dependencies for Cert Study Copilot.
+# Alternative to a native PostgreSQL install; see README for both paths.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: certcopilot-postgres
+    environment:
+      POSTGRES_DB: certcopilot
+      POSTGRES_USER: certcopilot
+      POSTGRES_PASSWORD: certcopilot
+    ports:
+      - "5434:5432"
+    volumes:
+      - certcopilot-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U certcopilot -d certcopilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Not used locally: the local profile stores files on disk. Kept for the day a
+  # deployment target needs S3, and behind a profile so `docker compose up -d`
+  # starts one container rather than two.
+  #   docker compose --profile s3 up -d
+  minio:
+    profiles: ["s3"]
+    image: minio/minio:latest
+    container_name: certcopilot-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: certcopilot
+      MINIO_ROOT_PASSWORD: certcopilot
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - certcopilot-miniodata:/data
+
+volumes:
+  certcopilot-pgdata:
+  certcopilot-miniodata:

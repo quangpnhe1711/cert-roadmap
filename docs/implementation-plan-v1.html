@@ -1,0 +1,783 @@
+<title>Cert Study Copilot Delivery Plan</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#F1F4F3; --surface:#FFFFFF; --surface-2:#E8EEEC;
+  --ink:#111819; --ink-2:#38474A; --muted:#65787A;
+  --line:#D2DBD9; --line-strong:#B4C2BF;
+  --accent:#0E5A63; --accent-soft:#DBEBEC; --accent-ink:#0B4249;
+  --on-accent:#FFFFFF;
+  --signal:#8F5405; --signal-soft:#F7E9D1;
+  --good:#2B6D48; --good-soft:#DBEADF;
+  --bad:#943321; --bad-soft:#F3DFDA;
+  --defer:#56606B; --defer-soft:#E3E7EA;
+  --shadow:0 1px 2px rgba(17,24,25,.05), 0 8px 24px -16px rgba(17,24,25,.25);
+  --sans:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+    --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+    --line:#233032; --line-strong:#324446;
+    --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+    --on-accent:#08191B;
+    --signal:#E0A855; --signal-soft:#2E2310;
+    --good:#68BE8A; --good-soft:#12271B;
+    --bad:#DF8570; --bad-soft:#2C1611;
+    --defer:#98A4AF; --defer-soft:#1C2226;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+  --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+  --line:#233032; --line-strong:#324446;
+  --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+  --on-accent:#08191B;
+  --signal:#E0A855; --signal-soft:#2E2310;
+  --good:#68BE8A; --good-soft:#12271B;
+  --bad:#DF8570; --bad-soft:#2C1611;
+  --defer:#98A4AF; --defer-soft:#1C2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-soft);color:var(--accent-ink)}
+a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.masthead{border-bottom:1px solid var(--line-strong);background:var(--surface)}
+.masthead-in{max-width:1240px;margin:0 auto;padding:34px 28px 26px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.eyebrow b{color:var(--signal);font-weight:500}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.06;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance;max-width:20ch}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:64ch;margin:0 0 24px}
+.meta{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);padding-top:16px;margin:0}
+.meta div{padding-right:30px;margin-right:30px;border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0;margin-right:0;padding-right:0}
+.meta dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+.meta dd{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:0}
+.meta dd.hold{color:var(--signal)}
+
+.shell{max-width:1240px;margin:0 auto;padding:0 28px 120px;display:grid;grid-template-columns:236px minmax(0,1fr);gap:56px;align-items:start}
+nav.toc{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:36px 0 40px;font-family:var(--sans);font-size:13.5px;line-height:1.4}
+nav.toc h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:22px 0 9px}
+nav.toc h2:first-child{margin-top:0}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{display:grid;grid-template-columns:26px 1fr;gap:6px;padding:4px 8px 4px 9px;color:var(--ink-2);text-decoration:none;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--accent)}
+nav.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+nav.toc a span{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:1px}
+nav.toc a.on span{color:var(--accent)}
+nav.toc a.defer span{color:var(--defer)}
+main{padding:44px 0 0;min-width:0}
+
+section{padding-top:14px;margin-bottom:48px;scroll-margin-top:20px}
+.part{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);display:inline-block;padding:5px 11px;margin:46px 0 26px;border-radius:2px}
+main > .part:first-child{margin-top:0}
+h2.sec{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:-.015em;line-height:1.18;margin:0 0 6px;text-wrap:balance;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+h2.sec i{font-family:var(--mono);font-style:normal;font-size:13px;font-weight:500;color:var(--accent);letter-spacing:0}
+.kicker{font-family:var(--sans);font-size:14px;color:var(--muted);margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line);max-width:none}
+h3{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-.008em;margin:30px 0 8px;text-wrap:balance}
+h4{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:22px 0 6px;color:var(--ink)}
+p{margin:0 0 14px;max-width:70ch}
+ul,ol.body{margin:0 0 14px;padding-left:22px;max-width:70ch}
+li{margin-bottom:5px}
+li::marker{color:var(--muted)}
+strong{font-weight:600}
+em{font-style:italic;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);padding:1.5px 5px;border-radius:3px;color:var(--ink)}
+
+.flow{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;padding:16px 18px;overflow-x:auto;margin:0 0 18px;color:var(--ink-2);white-space:pre}
+.callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;margin:0 0 18px;border-radius:0 3px 3px 0;max-width:76ch}
+.callout p{margin:0 0 8px;max-width:none}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.callout ul{max-width:none}
+.callout .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:6px;font-weight:500}
+.callout.rule{border-left-color:var(--accent);background:var(--accent-soft)}
+.callout.rule .lab{color:var(--accent-ink)}
+.callout.stop{border-left-color:var(--bad);background:var(--bad-soft)}
+.callout.stop .lab{color:var(--bad)}
+
+.chip{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2.5px 7px;border-radius:3px;white-space:nowrap;display:inline-block;vertical-align:.08em}
+.c-crit{background:var(--bad-soft);color:var(--bad)}
+.c-defer{background:var(--defer-soft);color:var(--defer)}
+.c-must{background:var(--good-soft);color:var(--good)}
+.c-should{background:var(--accent-soft);color:var(--accent-ink)}
+.c-ai{background:var(--signal-soft);color:var(--signal)}
+
+.wide{max-width:none;overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13.5px;line-height:1.45}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:11px 13px;border-bottom:1px solid var(--line-strong);vertical-align:bottom;background:var(--surface-2);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+td.k{color:var(--ink);font-weight:600}
+td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-family:var(--mono);font-size:12px}
+td.tight,th.tight{white-space:nowrap}
+
+.slice{border:1px solid var(--line);border-radius:4px;background:var(--surface);margin:0 0 22px;max-width:none;overflow:hidden}
+.slice.crit{border-left:4px solid var(--bad)}
+.slice.def{border-left:4px solid var(--defer)}
+.slice-h{display:flex;gap:14px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface-2);flex-wrap:wrap}
+.slice-h b{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;font-weight:700}
+.slice-h span.nm{font-family:var(--sans);font-size:17px;font-weight:600;color:var(--ink);flex:1;min-width:200px}
+.slice-h span.wk{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.slice-b{padding:4px 20px 16px}
+.slice-b dl{margin:0;display:grid;grid-template-columns:132px 1fr;gap:0}
+.slice-b dt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:11px 0;border-top:1px solid var(--line)}
+.slice-b dd{margin:0;padding:11px 0;border-top:1px solid var(--line);font-size:14.5px;font-family:var(--sans);line-height:1.5}
+.slice-b dt:first-of-type,.slice-b dt:first-of-type + dd{border-top:0}
+.slice-b dd ul{margin:0;padding-left:18px;max-width:none;font-size:14.5px}
+.slice-b dd li{margin-bottom:3px}
+.slice-b dd code{font-size:12px}
+.slice-b dd.acc{color:var(--ink)}
+
+.gate{border:2px solid var(--accent);border-radius:4px;background:var(--surface);padding:0;margin:36px 0 0;max-width:none;box-shadow:var(--shadow)}
+.gate-hd{background:var(--accent);color:var(--on-accent);padding:14px 22px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gate-bd{padding:24px 26px}
+.gate-bd dl{margin:0;display:grid;grid-template-columns:186px 1fr;gap:0}
+.gate-bd dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:13px 0;border-top:1px solid var(--line)}
+.gate-bd dd{margin:0;padding:13px 0;border-top:1px solid var(--line);font-size:15.5px}
+.gate-bd dt:first-of-type,.gate-bd dt:first-of-type + dd{border-top:0}
+.gate-bd dd ul{margin:0;padding-left:19px;max-width:none}
+.gate-bd dd p{max-width:none;margin:0 0 8px}
+.gate-bd dd p:last-child{margin:0}
+.verdict{font-family:var(--sans);font-weight:700;font-size:17px;color:var(--good)}
+.verdict.cond{color:var(--signal)}
+
+.foot{max-width:70ch;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;margin-top:44px}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:0;padding:0 20px 80px}
+  nav.toc{position:static;max-height:none;padding:24px 0 20px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0}
+  .masthead-in{padding:26px 20px 22px}
+  .meta div{border-right:0;padding-right:0;margin-right:24px;margin-bottom:10px}
+  .gate-bd dl,.slice-b dl{grid-template-columns:1fr}
+  .gate-bd dt,.slice-b dt{padding-bottom:0}
+  .gate-bd dd,.slice-b dd{padding-top:3px;border-top:0}
+  .gate-bd dt:first-of-type + dd,.slice-b dt:first-of-type + dd{border-top:0}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="eyebrow">Stage 3 · Implementation Plan · rev 2 · <b>Approved · đã áp dụng P1–P4</b></p>
+    <h1>Cert Study Copilot — Delivery Plan</h1>
+    <p class="standfirst">Mười một vertical slice, mỗi slice build được, chạy được, test được, demo được. Đường găng cho 6–8 tuần, và danh sách chính xác những gì cắt được mà vòng học lõi vẫn nguyên vẹn.</p>
+    <dl class="meta">
+      <div><dt>Đội</dt><dd>1 dev chính</dd></div>
+      <div><dt>Mục tiêu</dt><dd>8 tuần (+ tuần 0)</dd></div>
+      <div><dt>Đường găng</dt><dd>10 hạng mục</dd></div>
+      <div><dt>Cắt được</dt><dd>10 mục trình bày · ~1.5 tuần</dd></div>
+      <div><dt>Trạng thái</dt><dd>Approved · S0 đã bắt đầu</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="shell">
+<nav class="toc" aria-label="Mục lục">
+  <h2>Khung</h2>
+  <ol>
+    <li><a href="#principles"><span>◆</span>Nguyên tắc chia slice</a></li>
+    <li><a href="#graph"><span>◆</span>Đồ thị phụ thuộc</a></li>
+    <li><a href="#timeline"><span>◆</span>Lịch 8 tuần</a></li>
+  </ol>
+  <h2>Slices</h2>
+  <ol>
+    <li><a href="#s0"><span>S0</span>Spikes + Skeleton</a></li>
+    <li><a href="#s1"><span>S1</span>Identity · Catalog · Capacity</a></li>
+    <li><a href="#s2"><span>S2</span>Upload · Extract · Jobs</a></li>
+    <li><a href="#s3"><span>S3</span>Structure · AI Gateway</a></li>
+    <li><a href="#s4a"><span>S4a</span>Exam Mapping</a></li>
+    <li><a href="#s4b" class="defer"><span>S4b</span>Coverage · Gaps</a></li>
+    <li><a href="#s5"><span>S5</span>Scheduler</a></li>
+    <li><a href="#s6"><span>S6</span>Learning Pack · Today</a></li>
+    <li><a href="#s7"><span>S7</span>Quiz · Mastery</a></li>
+    <li><a href="#s8"><span>S8</span>Closed Loop</a></li>
+    <li><a href="#s9"><span>S9</span>Final Review Exam</a></li>
+    <li><a href="#s10"><span>S10</span>Release Eval · Harden</a></li>
+  </ol>
+  <h2>Quyết định giao hàng</h2>
+  <ol>
+    <li><a href="#critical"><span>◆</span>Đường găng</a></li>
+    <li><a href="#deferrable"><span>◆</span>Danh sách cắt được</a></li>
+    <li><a href="#spikes"><span>◆</span>Phụ thuộc spike</a></li>
+    <li><a href="#dod"><span>◆</span>Definition of Done</a></li>
+    <li><a href="#gate"><span>◆</span>Stage Gate 3</a></li>
+  </ol>
+</nav>
+
+<main>
+<span class="part">Khung kế hoạch</span>
+
+<section id="principles">
+<h2 class="sec"><i>◆</i>Nguyên tắc chia slice</h2>
+
+<ol class="body">
+<li><strong>Mỗi slice phải demo được cho một người thật.</strong> Không có slice nào là "hạ tầng thuần" — kể cả S2 (job infra) cũng kết thúc bằng "upload một file 320 trang và thấy nó được đọc".</li>
+<li><strong>Ràng buộc kiến trúc đi trước code mà nó ràng buộc.</strong> ArchUnit R1–R7 nằm ở S0, không phải tuần 6. Cost ledger và budget reservation (A3) nằm ở S2, trước AI operation đầu tiên ở S3. Lắp một cái van sau khi nước đã chảy là cách mọi nguyên tắc bị bỏ.</li>
+<li><strong>Tách slice theo trục rủi ro, không theo trục tầng.</strong> Không có slice "làm hết backend" rồi slice "làm hết frontend". Mỗi slice xuyên từ migration lên tới màn hình.</li>
+<li><strong>Việc không phụ thuộc AI là việc dự phòng.</strong> Vòng lặp prompt có thời gian chờ đánh giá. S5 (scheduler) hoàn toàn không phụ thuộc gì bên ngoài — nó là việc lấp chỗ trống lý tưởng khi đang chờ kết quả eval.</li>
+<li><strong>Cắt phải cắt được sạch.</strong> Mười hạng mục trong danh sách cắt được đều không có ai phụ thuộc vào chúng trên đường găng — cắt là không làm, không phải làm dở.</li>
+</ol>
+
+<div class="callout">
+<span class="lab">Ràng buộc quyết định hình dạng kế hoạch này</span>
+<p>Với 1 dev và 8 tuần, thứ khan hiếm không phải là giờ lập trình mà là <strong>số lần được phép sai</strong>. Nên kế hoạch tối ưu cho việc <em>phát hiện sai sớm</em>: spike ở tuần 0, slice rủi ro cao nhất (S6) ở giữa chứ không ở cuối, và eval có cổng cứng ở S10 thay vì cảm tính "thấy ổn rồi".</p>
+</div>
+</section>
+
+<section id="graph">
+<h2 class="sec"><i>◆</i>Đồ thị phụ thuộc</h2>
+
+<div class="flow">TUẦN 0
+  ┌─ spike S1  trích xuất deck thật ──────┐
+  ├─ spike S2  một bài giảng VN ──────────┤
+  ├─ spike S3  10 câu quiz + sourceSpan ──┼──▶ gates AR-4 · D6 · D11
+  ├─ spike S4  đo token ──────────────────┘
+  └─ S0  walking skeleton + ArchUnit
+
+
+ĐƯỜNG GĂNG  (đỏ = cắt là vỡ vòng học lõi)
+
+  S0 ──▶ S1 ──▶ S2 ──▶ S3 ──▶ S4a ──▶ S5 ──▶ S6 ──▶ S7 ──▶ S8 ──▶ S10
+        auth   upload  cấu    map     lịch   pack   quiz   vòng   eval
+        cert   extract trúc   exam           Today  mastery lặp    + hardening
+        cap.   jobs    AI                                   khép
+        check  budget  gateway                               kín
+
+NHÁNH CẮT ĐƯỢC  (xám = không ai trên đường găng phụ thuộc)
+
+  S3 ─┐
+      └──▶ S4b  coverage matrix · gap primer · tick đã biết
+  S7 ─┐
+      └──▶ S9   Final Review Exam  (lắp từ bank, tái dùng UI quiz)
+
+
+VIỆC DỰ PHÒNG KHI CHỜ EVAL
+  S5 không phụ thuộc AI, không phụ thuộc tài liệu, không phụ thuộc mạng.
+  → xây bất cứ lúc nào bị chặn ở S6.</div>
+
+<h4>Vì sao S4a trên đường găng còn S4b thì không</h4>
+<p>Câu hỏi đáng hỏi: coverage có thật sự cần cho vòng học không? Tách ra thì rõ:</p>
+<ul>
+<li><strong>S4a Mapping là bắt buộc</strong> — Learning Pack cần <code>taskStatementId</code> để gắn nhãn MUST/SHOULD KNOW, và validator quiz <em>từ chối</em> câu hỏi không có <code>taskStatementId</code> thuộc blueprint. Không có mapping thì hai slice quan trọng nhất không chạy được.</li>
+<li><strong>S4b Coverage UI + gap primer là cắt được</strong> — ma trận độ phủ là giá trị lúc onboarding, không phải giá trị hằng ngày (Scope §01 đã kết luận điều này). Cắt nó thì người dùng vẫn có lịch, vẫn có bài giảng, vẫn có quiz, vẫn có replan.</li>
+</ul>
+</section>
+
+<section id="timeline">
+<h2 class="sec"><i>◆</i>Lịch 8 tuần</h2>
+
+<div class="flow">        W0      W1      W2      W3      W4      W5      W6      W7      W8
+        ────────────────────────────────────────────────────────────────────
+spikes  ████
+S0      ████
+S1              ██████
+S2                      ██████
+S3                              █████
+S4a                                ███
+S5                                      ██████
+S6                                              ██████  ░░              ← prompt loop
+S7                                                      ██████
+S8                                                              █████
+S4b                                                             ░░░       cắt được
+S9                                                                ░░      cắt được
+S10                                                                  ██████
+                                                                     eval ×2
+        ────────────────────────────────────────────────────────────────────
+                                                                     ▲
+                                                          đóng băng prompt (D12)
+
+░ = có thể cắt hoặc dời      ██ = đường găng</div>
+
+<h4>Biến thể nén 6 tuần — <span style="color:var(--signal)">Internal Alpha / Pilot</span>, không phải MVP</h4>
+<p>Nếu buộc phải giao trong 6 tuần: cắt toàn bộ 10 hạng mục trình bày, gộp S8 vào cuối W5–W6, chạy Release Eval trong W6. Nhưng phải gọi đúng tên nó.</p>
+<div class="callout stop" style="margin-top:10px"><span class="lab">Thuật ngữ phát hành</span><p>D12 không đổi: <strong>hai lần Release Eval liên tiếp đạt</strong> mới được đóng băng prompt và phát hành MVP. Một lịch 6 tuần chỉ chạy được một lần Release Eval, nên kết quả của nó phải được gán nhãn <strong><code>Internal Alpha / Pilot</code></strong> — không phải một MVP sẵn sàng cho production.</p><p>Không được làm yếu D12 chỉ để vừa lịch. Nếu deadline là ràng buộc cứng, thứ phải nhượng bộ là <em>nhãn phát hành và số người dùng</em>, không phải cổng chất lượng.</p></div>
+
+<div class="callout stop">
+<span class="lab">Điểm dễ vỡ nhất của lịch này</span>
+<p><strong>W5–W6 (S6 Learning Pack).</strong> Thời gian ở đây không phải thời gian code — code cho S6 khoảng 4–5 ngày. Phần còn lại là vòng lặp prompt và chờ người đánh giá đọc. Nếu chất lượng bài giảng chưa đạt sau W6, <em>đừng dồn thêm tuần vào nó</em>: chuyển sang S7–S8 để hoàn thiện vòng lặp khép kín, rồi quay lại prompt trong W8. Một sản phẩm có vòng lặp hoàn chỉnh với bài giảng khá tốt học được nhiều hơn một sản phẩm có bài giảng xuất sắc mà không có quiz.</p>
+</div>
+</section>
+
+<span class="part">Vertical slices</span>
+
+<section id="s0">
+<div class="slice crit">
+<div class="slice-h"><b>S0</b><span class="nm">Spikes + Walking Skeleton</span><span class="wk">W0</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Trả lời bốn câu hỏi có thể lật kiến trúc, và dựng bộ khung mà mọi slice sau chạy trong đó.</dd>
+<dt>Spikes</dt><dd><ul>
+<li><strong>S1</strong> Trích xuất deck AIF-C01 thật (PDF, và PPTX nếu có) → <strong>phân loại trang</strong> TEXT_DOMINANT · MIXED · IMAGE_DOMINANT, rồi đo <em>khả năng phục hồi nội dung liên quan tới việc học</em> trên từng loại (xem P4 bên dưới)</li>
+<li><strong>S2</strong> Sinh một bài giảng VN từ ~35 slide → người học Việt đọc và đánh giá</li>
+<li><strong>S3</strong> Sinh 10 câu quiz kèm sourceSpan → tỉ lệ đáp án đúng thật · tỉ lệ bị pipeline loại</li>
+<li><strong>S4</strong> Đo token của S1–S3 → ngoại suy chi phí một plan</li>
+</ul></dd>
+<dt>Backend</dt><dd>Spring Boot + Postgres + Flyway · docker-compose (postgres + minio) · health endpoint · cấu hình theo môi trường · <strong>hạ tầng nạp prompt có version + hot-reload ở dev</strong> (cần ngay cho S2/S3)</dd>
+<dt>Frontend</dt><dd>Vite + React + TS shell · TanStack Query · router · một trang gọi được health endpoint</dd>
+<dt>Migrations</dt><dd><code>V1__baseline</code> — chỉ bảng <code>schema_meta</code>, để kiểm chuỗi migration chạy sạch từ DB rỗng</dd>
+<dt>Tests</dt><dd><strong>ArchUnit R1–R7 trong CI, fail build</strong> — kể cả khi chưa có module nào để vi phạm. Đặt luật trước, không phải sau.<br><br><strong>P3 — luật không được pass rỗng.</strong> ArchUnit xanh phải nghĩa là <em>ranh giới đang được cưỡng chế</em>, không phải <em>không có class nào khớp</em>. S0 phải có hai cơ chế:<ul><li><strong>Coverage test:</strong> mỗi luật khai báo package nó ràng buộc. Luật không khớp class nào chỉ được chấp nhận khi được đánh dấu <em>pending</em> kèm slice sẽ tạo ra package đó, và pending được in ra mỗi lần chạy CI. Marker pending đã cũ (package giờ đã tồn tại) làm <strong>fail build</strong>.</li><li><strong>Verification fixture:</strong> chạy <em>chính</em> object luật đó lên hai fixture — một tuân thủ, một cố ý vi phạm. Luật phải <em>chấp nhận</em> cái đầu và <em>phát hiện</em> cái sau. Nếu fixture biến mất, test cũng fail.</li></ul>Khi module thật xuất hiện, chính các luật production đó phủ lên chúng trực tiếp — không có bản sao dành riêng cho test.</dd>
+<dt>Acceptance</dt><dd class="acc"><code>docker-compose up</code> → app chạy · migration áp dụng từ DB rỗng · CI xanh gồm arch test · trang React gọi được API. Bốn spike có kết quả viết thành một trang, kèm khuyến nghị cho AR-4 và D6.</dd>
+<dt>Rủi ro</dt><dd>Nếu S1 cho thấy nội dung liên quan tới việc học không phục hồi được ở mức chấp nhận được → <strong>dừng lại và xem lại phạm vi MVP</strong> trước khi viết dòng code thứ hai. Đây là điểm quay đầu rẻ nhất trong cả dự án.</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s1">
+<div class="slice crit">
+<div class="slice-h"><b>S1</b><span class="nm">Identity · Catalog · Plan Draft · Capacity Check</span><span class="wk">W1</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Giao <strong>khoảnh khắc giá trị đầu tiên</strong> end-to-end: người dùng nhập ngày thi và giờ rảnh, nhận lại một đánh giá thật về sức chứa trong dưới 10 giây.</dd>
+<dt>Migrations</dt><dd><code>V2</code> <code>app_user</code> · <code>refresh_token</code><br><code>V3</code> <code>certification</code> · <code>certification_version</code> · <code>exam_domain</code> · <code>task_statement</code> · <code>knowledge_item</code> · <code>official_resource</code> · <code>source_ref</code><br><code>V4</code> <code>study_plan</code> (trường DRAFT)</dd>
+<dt>Backend</dt><dd><ul>
+<li>Auth: register · login · refresh xoay vòng · logout · Argon2id</li>
+<li><strong><code>PlanAccessGuard</code> tập trung</strong> — dựng ngay từ đây theo nguyên tắc D9</li>
+<li>Catalog read API + blueprint endpoint kèm SourceRef</li>
+<li>Tạo plan DRAFT</li>
+<li><code>CapacityCalculator</code> — hàm thuần: availableDays · dailyCapacity[] · totalCapacity · reviewWindow · dải so sánh</li>
+</ul></dd>
+<dt>Frontend</dt><dd>Màn hình đăng nhập/đăng ký · onboarding bước 1 (chọn chứng chỉ) · bước 2 (ngày thi, giờ theo thứ, ngày nghỉ) · thẻ kết quả Capacity Check</dd>
+<dt>Dữ liệu</dt><dd><strong>Curator seed blueprint AIF-C01 bằng tay</strong> kèm SourceRef đầy đủ (~4 giờ). Chặn mọi thứ phía sau — làm trước tiên trong tuần.</dd>
+<dt>AI/prompt</dt><dd>Không có</dd>
+<dt>Tests</dt><dd>Auth integration (Testcontainers) · property test <code>CapacityCalculator</code> (không bao giờ âm · tôn trọng ngày nghỉ · tôn trọng thứ có 0 giờ · ngày thi trong quá khứ → lỗi) · <strong>security test #1:</strong> user A không đọc được plan của user B</dd>
+<dt>Acceptance</dt><dd class="acc">Đăng ký → chọn AIF-C01 → thấy 5 domain kèm trọng số và link nguồn → nhập 10/09/2026 và 4h/ngày → nhận <em>"11 ngày × 4h = 44h. Chứng chỉ này thường cần 40–60h."</em> trong &lt;10s (có đo).</dd>
+<dt>Phụ thuộc</dt><dd>S0</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s2">
+<div class="slice crit">
+<div class="slice-h"><b>S2</b><span class="nm">Upload · Extraction · Job Infra · Budget Ledger</span><span class="wk">W2</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Đọc được tài liệu thật, và dựng xong hai cơ chế nền mà mọi thứ sau phụ thuộc: hàng đợi job có phục hồi (A4) và sổ chi phí có đặt chỗ (A3).</dd>
+<dt>Migrations</dt><dd><code>V5</code> <code>material</code> · <code>material_revision</code> · <code>material_page</code><br><code>V6</code> <code>job</code> (đủ cột A4) · index một phần cho claim và cho quét lease<br><code>V7</code> <code>plan_budget</code> · <code>budget_reservation</code> · <code>ai_call_ledger</code> · <code>analytics_event</code></dd>
+<dt>Backend</dt><dd><ul>
+<li><code>ObjectStoragePort</code> · signed URL init/complete</li>
+<li>Cổng S0: sniff MIME thật · cap dung lượng và số trang · <strong>heuristic chặn exam dump</strong></li>
+<li><strong>Job infra (A4):</strong> claim <code>SKIP LOCKED</code> · lease + heartbeat · sweeper lease chết · backoff · <code>dedupe_key</code> · trạng thái cuối · helper enqueue trong transaction</li>
+<li>Tầng EXTRACT (PDFBox/POI) → MaterialRevision + MaterialPage[] + quality flags</li>
+<li>Tầng SEGMENT (ứng viên ranh giới từ tín hiệu cứng)</li>
+<li>PPTX → PDF cho viewer <em>(hoặc đường lui theo kết quả spike S1 — xem AR-4)</em></li>
+<li><strong>Khung <code>AiGateway</code> (A2+A3):</strong> tính <code>artifactKey</code> · đặt chỗ ngân sách nguyên tử · quyết toán · ghi <code>ai_call_ledger</code> · bảng giá model trong config · sweeper đặt chỗ hết hạn</li>
+</ul></dd>
+<dt>Frontend</dt><dd>UI upload (kéo thả, tiến trình) · màn hình đang phân tích có polling · hiển thị cảnh báo chất lượng</dd>
+<dt>AI/prompt</dt><dd>Chưa có operation nào — chỉ hạ tầng. <em>Cố ý: xây van trước khi mở nước.</em></dd>
+<dt>Tests</dt><dd><ul>
+<li>Job (Testcontainers): claim song song không trùng · lease hết hạn → requeue với attempts đã tăng · <code>dedupe_key</code> idempotent · hết max_attempts → DEAD · enqueue rollback cùng transaction</li>
+<li><strong>Đặt chỗ ngân sách đồng thời (A3):</strong> N luồng song song đặt chỗ trên cùng một cap → tổng không bao giờ vượt cap</li>
+<li>Golden file trích xuất, đối chiếu deck thật từ spike S1</li>
+<li>Heuristic dump: fixture xấu bị từ chối</li>
+</ul></dd>
+<dt>Acceptance</dt><dd class="acc">Upload PDF 320 trang → MaterialRevision được tạo → trang được trích → cảnh báo <em>"18 trang chủ yếu là sơ đồ"</em> hiện ra. Kill worker giữa job → job tự phục hồi, không chạy trùng. Mở được viewer URL tới đúng trang.</dd>
+<dt>Phụ thuộc</dt><dd>S1 · <strong>spike S1 quyết định AR-4 tại đây</strong></dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s3">
+<div class="slice crit">
+<div class="slice-h"><b>S3</b><span class="nm">Structure · Topics · LearningUnits · AI Gateway sống</span><span class="wk">W3</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Operation AI đầu tiên chạy thật, đi qua đầy đủ cache · ngân sách · validate · fallback. Sinh ra LearningUnit theo A1 (cert-agnostic).</dd>
+<dt>Migrations</dt><dd><code>V8</code> <code>course_section</code> · <code>course_topic</code> · <code>material_term_index</code><br><code>V9</code> <code>learning_unit</code> (A1: <code>material_revision_id</code>, <code>base_effort_minutes</code>, <code>content_hash</code> — <strong>không có relevance</strong>)</dd>
+<dt>Backend</dt><dd><ul>
+<li><code>AiGateway</code> hoàn chỉnh: registry operation · nạp prompt có version · parse structured output · validate schema · hook domain validator · retry có giới hạn · chuỗi fallback · đọc/ghi cache kèm <code>cache_status</code></li>
+<li>Operation <code>material.structure.extract</code>, <code>material.topics.extract</code></li>
+<li>Validator cấu trúc: liên tục · không chồng lấn · phủ hết trang · trang tồn tại → repair → fallback outline → fallback phẳng + cờ <code>lowPrecision</code></li>
+<li>Tầng UNITS (cắt deterministic tại ranh giới trang) · mô hình <code>base_effort</code></li>
+<li>Dựng term index</li>
+</ul></dd>
+<dt>Frontend</dt><dd>Xem trước cấu trúc trong màn hình phân tích (section hiện dần) · <strong>UI sửa ranh giới section</strong> <em>(có điều kiện — xem danh sách cắt được)</em></dd>
+<dt>AI/prompt</dt><dd>2 prompt + 2 validator · dựng bộ khung <strong>Smoke Eval</strong></dd>
+<dt>Tests</dt><dd><ul>
+<li>Property test validator cấu trúc: mọi cấu trúc xấu sinh ngẫu nhiên đều bị bắt</li>
+<li>Recorded-fixture cho AI — <strong>không gọi LLM thật trong CI</strong></li>
+<li><strong>Test <code>artifactKey</code> (A2):</strong> đổi promptVersion / modelConfigVersion / structureHash đều ra key khác; cùng đầu vào ra cùng key</li>
+<li>Test invalidation: key <code>INVALIDATED</code> không được phục vụ lại</li>
+</ul></dd>
+<dt>Acceptance</dt><dd class="acc">Upload → cây cấu trúc có page range → LearningUnit được tạo kèm base effort. Đổi promptVersion → artifact mới được sinh, artifact cũ chuyển SUPERSEDED chứ không bị ghi đè. Ép AI trả rác → rơi về outline, plan gắn cờ lowPrecision, người dùng được cảnh báo.</dd>
+<dt>Phụ thuộc</dt><dd>S2 · spike S1 (cần UI sửa ranh giới không) · spike S4 (chọn tier model)</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s4a">
+<div class="slice crit">
+<div class="slice-h"><b>S4a</b><span class="nm">Exam Mapping · Relevance Resolution</span><span class="wk">W3</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Nối LearningUnit vào blueprint. Đây là điều kiện cần cho nhãn ngữ cảnh thi ở S6 và cho validator quiz ở S7.</dd>
+<dt>Migrations</dt><dd><code>V10</code> <code>unit_exam_mapping</code> (A1: khoá theo <code>learning_unit_id × certification_version_id × mapping_version</code>, <strong>relevance sống ở đây</strong>)</dd>
+<dt>Backend</dt><dd>Operation <code>mapping.topic.to.task</code> + validator (<code>taskStatementId</code> thuộc blueprint đang pin · confidence ∈ [0,1]) · phân giải relevance · cảnh báo tỉ lệ map &lt; 40%</dd>
+<dt>Frontend</dt><dd>Tối thiểu — một dòng "đã map ~86% phạm vi bài thi (ước tính)" trong màn hình phân tích</dd>
+<dt>AI/prompt</dt><dd>1 prompt + validator</dd>
+<dt>Tests</dt><dd>Validator mapping · cảnh báo tỉ lệ thấp · <strong>test tái dùng kiểm chứng A1:</strong> cùng revision + cùng cert → cache hit chi phí 0; cert <em>khác</em> → mapping mới nhưng <em>LearningUnit không bị dựng lại</em></dd>
+<dt>Acceptance</dt><dd class="acc">Unit mang relevance. Tạo plan thứ hai trên cùng tài liệu và cùng chứng chỉ → chi phí mapping bằng 0 (kiểm bằng <code>ai_call_ledger</code>).</dd>
+<dt>Phụ thuộc</dt><dd>S3</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s4b">
+<div class="slice def">
+<div class="slice-h"><b>S4b</b><span class="nm">Coverage — năng lực bắt buộc, trình bày cắt được</span><span class="wk">năng lực W4 · UI W7</span><span class="chip c-crit">Năng lực: MVP</span><span class="chip c-defer">UI: cắt được</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Stage 1 định nghĩa M3 là <em>"Map exam scope + coverage"</em>, nên <strong>năng lực coverage là MVP</strong>. Cái cắt được là phần <em>trình bày</em>, không phải phần tính toán. Sai sót ở rev 1: tôi đã gộp cả hai làm một.</dd>
+<dt>PHẢI GIỮ<br>(MVP)</dt><dd><ul><li><code>UnitExamMapping</code></li><li>Tính coverage deterministic ở mức task statement</li><li>Phát hiện task chưa phủ / phủ mỏng (NOT_COVERED · PARTIAL)</li><li>Provenance của coverage — truy được vì sao một task được coi là đã phủ</li><li>Dữ liệu coverage mà planning và validation cần (relevance, thang nén, nhãn ngữ cảnh thi)</li></ul></dd>
+<dt>CẮT ĐƯỢC<br>(trình bày)</dt><dd><ul><li>Màn hình ma trận coverage</li><li>Trực quan hoá lỗ hổng</li><li>Sinh gap primer</li><li>Phần trình bày thêm trong onboarding</li></ul></dd>
+<dt>Migrations</dt><dd><code>V11</code> <code>coverage_assessment</code></dd>
+<dt>Backend</dt><dd>Tầng COVERAGE (phép trừ tập hợp deterministic) · tạo LearningUnit <code>origin = GAP_PRIMER</code> · endpoint tick unit đã biết</dd>
+<dt>Frontend</dt><dd>Màn hình ma trận coverage theo domain · danh sách lỗ hổng có tên · checkbox "phần này tôi đã biết"</dd>
+<dt>AI/prompt</dt><dd>Không có — coverage thuần deterministic; primer dùng lại prompt pack của S6</dd>
+<dt>Tests</dt><dd>Unit test phép trừ tập hợp cho bốn trạng thái COVERED/PARTIAL/NOT_COVERED/EXTRA</dd>
+<dt>Acceptance</dt><dd class="acc">Coverage % theo domain + lỗ hổng nêu tên + tick phần đã biết làm lịch nén lại.</dd>
+<dt>Cắt UI thì sao</dt><dd>Coverage vẫn được tính và vẫn nuôi planning; người dùng chỉ không thấy ma trận và không nhận primer cho lỗ hổng. Vòng học lõi nguyên vẹn, và <strong>M3 vẫn được thoả</strong>.</dd>
+<dt>Phụ thuộc</dt><dd>S4a · (tick đã biết cần S5 để nén lại)</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s5">
+<div class="slice crit">
+<div class="slice-h"><b>S5</b><span class="nm">Scheduler · Plan Activation · Constraints</span><span class="wk">W4</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Lịch thật từ khối lượng tài liệu thật. Slice duy nhất không phụ thuộc AI, không phụ thuộc mạng — <strong>việc dự phòng lý tưởng khi bị chặn ở chỗ khác.</strong></dd>
+<dt>Migrations</dt><dd><code>V12</code> <code>plan_unit</code> (A1) · <code>study_day</code> · <code>study_day_item</code><br><code>V13</code> <code>plan_adjustment</code></dd>
+<dt>Backend</dt><dd><ul>
+<li><code>SchedulerEngine.plan(PlanningContext)</code> — hàm thuần, trả <code>Scheduled | Infeasible</code></li>
+<li>Thang nén L1–L5 · cửa sổ ôn tập · bin-pack có dung sai 1.15</li>
+<li><code>PlanInvariants.validate()</code></li>
+<li>Tính effective effort: <code>base × weightMul(mapping) × depthFlag</code></li>
+<li>Endpoint activate · <code>PATCH /constraints</code> → replan</li>
+</ul></dd>
+<dt>Frontend</dt><dd>Màn hình xem lại kế hoạch · lịch dạng danh sách · <strong>hộp thoại Infeasible với ba lựa chọn</strong> · Settings (ngày thi, giờ rảnh, ngày nghỉ)</dd>
+<dt>AI/prompt</dt><dd>Không có</dd>
+<dt>Tests</dt><dd><ul>
+<li><strong>Property test jqwik</strong> — bộ test chủ lực: không ngày nào vượt capacity×1.15 · không ngày nào sau examDate · không rơi vào blocked · ngày frozen không đổi một byte · mỗi PlanUnit xếp đúng một lần hoặc nằm trong <code>droppedUnits</code> kèm lý do</li>
+<li>Golden snapshot kịch bản AIF-C01 11 ngày (Scope §28)</li>
+<li>Biên: ngày thi là mai · 0 giờ mọi thứ · tất cả đã biết · thiếu hụt khổng lồ → phải trả <code>Infeasible</code></li>
+<li>Idempotency: gọi hai lần ra kết quả giống hệt</li>
+<li>Vi phạm invariant → rollback, không persist gì</li>
+</ul></dd>
+<dt>Acceptance</dt><dd class="acc">Activate → lịch 11 ngày, chế độ nén kích hoạt, danh sách unit bị bỏ kèm lý do. Đổi ngày thi → replan, ngày đã hoàn thành không đổi. Kế hoạch bất khả thi → 409 kèm ba lựa chọn, <strong>không ghi gì vào DB</strong>.</dd>
+<dt>Phụ thuộc</dt><dd>S4a (cần relevance cho thang nén) · S3 (cần unit)</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s6">
+<div class="slice crit">
+<div class="slice-h"><b>S6</b><span class="nm">Learning Pack · Today Screen</span><span class="wk">W5 (+ vòng lặp prompt)</span><span class="chip c-crit">Đường găng · rủi ro cao nhất</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Sản phẩm thật sự. Đây là slice quyết định người dùng có quay lại ngày thứ hai không.</dd>
+<dt>Migrations</dt><dd><code>V14</code> <code>learning_pack</code> (A2: <code>artifact_key</code> unique, <code>cache_status</code>, <code>superseded_by</code>) · <code>content_block</code><br><code>V15</code> <code>glossary_entry</code> · <code>content_flag</code></dd>
+<dt>Backend</dt><dd><ul>
+<li>Operation <code>learning.pack.generate</code> với validator đầy đủ: phủ MUST_KNOW · trùng n-gram 12-gram · page range hợp lệ · nhất quán glossary</li>
+<li><strong>Van pre-generate: tối đa 2 ngày</strong> (C6), đặt ở tầng enqueue</li>
+<li>View model <code>/today</code> đã ghép sẵn</li>
+<li>Endpoint content flag → set <code>cache_status = INVALIDATED</code> cho đúng artifactKey</li>
+</ul></dd>
+<dt>Frontend</dt><dd><ul>
+<li><strong>Màn hình Today</strong> — trang chủ</li>
+<li><code>BlockRenderer</code> registry cho 10 loại block</li>
+<li>Panel slide gốc bằng pdf.js, mở cạnh bên tại đúng page range</li>
+<li>Nút báo sai trên từng block · đánh dấu unit xong</li>
+</ul></dd>
+<dt>AI/prompt</dt><dd><strong>Đây là nơi vòng lặp prompt sống.</strong> 1 prompt lớn + validator nhiều tầng. Smoke Eval (8 unit) chạy sau mỗi lần đổi.</dd>
+<dt>Tests</dt><dd>Từng validator riêng · test trùng n-gram với fixture cố tình sao chép · test phủ MUST_KNOW · <strong>Smoke Eval 8 unit</strong> chạy lặp · test van pre-generate không sinh quá 2 ngày</dd>
+<dt>Acceptance</dt><dd class="acc">Mở Today → bài giảng tiếng Việt với keyword giải thích tại chỗ, nhãn MUST/SHOULD, bảng so sánh, chuỗi quan hệ. Panel slide mở đúng trang. Báo sai một block → block được đánh dấu và cache bị vô hiệu. Hoàn thành unit. <strong>Pack ngày 2 đã sinh sẵn — không có màn hình chờ.</strong></dd>
+<dt>Rủi ro</dt><dd><strong>AR-1.</strong> Nếu chất lượng chưa đạt sau W6, chuyển sang S7–S8 và quay lại prompt ở W8. Đừng dồn tuần vào đây.</dd>
+<dt>Phụ thuộc</dt><dd>S5 (cần một ngày đã xếp lịch) · S4a (cần ngữ cảnh thi) · spike S2</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s7">
+<div class="slice crit">
+<div class="slice-h"><b>S7</b><span class="nm">Quiz · Grading · Mastery</span><span class="wk">W6</span><span class="chip c-crit">Đường găng</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Tín hiệu phản hồi. Không có nó, sản phẩm chỉ là một trình đọc tài liệu có lịch.</dd>
+<dt>Migrations</dt><dd><code>V16</code> <code>question</code> (<code>source_span</code> NOT NULL) · <code>quiz_attempt</code> · <code>attempt_question</code><br><code>V17</code> <code>topic_mastery</code></dd>
+<dt>Backend</dt><dd><ul>
+<li>Operation <code>assessment.quiz.generate</code> + <strong>pipeline 8 kiểm tra</strong> (Scope §13) — sai thì <em>loại câu</em>, không sửa</li>
+<li>Chấm điểm deterministic</li>
+<li>Quy tắc mastery, gồm điều kiện MASTERED cần 2 phiên cách ≥1 ngày</li>
+<li>Chọn câu warm-up từ bank (deterministic, ưu tiên câu đã sai)</li>
+</ul></dd>
+<dt>Frontend</dt><dd>Màn hình quiz · màn hình kết quả có giải thích và vì sao đáp án khác sai · phần warm-up trong Today · <strong>nhãn "do AI tạo" thường trực, không tắt được</strong></dd>
+<dt>AI/prompt</dt><dd>1 prompt + validator chặt nhất trong hệ thống</dd>
+<dt>Tests</dt><dd>Từng kiểm tra trong 8 kiểm tra, test riêng · máy trạng thái mastery (mọi chuyển tiếp, đặc biệt quy tắc 2 phiên) · tính xác định của chấm điểm · <strong>0 câu hợp lệ → quiz UNAVAILABLE nhưng ngày vẫn hoàn thành được</strong> · phần câu hỏi của Release Eval</dd>
+<dt>Acceptance</dt><dd class="acc">Làm quiz sau bài học → chấm → giải thích đầy đủ → mastery cập nhật. Câu không có <code>sourceSpan</code> <strong>không bao giờ</strong> tới tay người dùng. Toàn bộ câu bị loại → thông báo trung thực, ngày vẫn hoàn thành được.</dd>
+<dt>Phụ thuộc</dt><dd>S6 (grounded vào pack) · spike S3</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s8">
+<div class="slice crit">
+<div class="slice-h"><b>S8</b><span class="nm">Day Completion · Weak Topics · Vòng lặp khép kín</span><span class="wk">W7</span><span class="chip c-crit">Đường găng · slice định nghĩa sản phẩm</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Đóng vòng lặp. <strong>Đây là slice biến sản phẩm từ "to-do list có bài giảng" thành thứ mà ChatGPT không làm được.</strong></dd>
+<dt>Migrations</dt><dd><code>V18</code> index bổ sung · bảng mã lý do điều chỉnh (i18n key)</dd>
+<dt>Backend</dt><dd><ul>
+<li><strong>Chuỗi transaction F2</strong>: advisory lock → COMPLETED → carry forward → recompute mastery → phát hiện weak 2 tầng → replan → validate invariants → ghi job pre-generate → analytics event. Tất cả trong một transaction, &lt;200ms.</li>
+<li>Xử lý <code>Idempotency-Key</code></li>
+<li>Operation <code>assessment.weakness.explain</code> (nhỏ, tier FAST)</li>
+<li>View model <code>/progress</code></li>
+</ul></dd>
+<dt>Frontend</dt><dd>Luồng hoàn thành ngày · <strong>hiển thị diff kế hoạch</strong> <em>(cắt được → toast)</em> · <strong>tab Tiến độ</strong> <em>(cắt được → chỉ tổng hợp theo domain)</em></dd>
+<dt>AI/prompt</dt><dd>1 prompt nhỏ</dd>
+<dt>Tests</dt><dd>Integration test toàn chuỗi F2 · double-submit idempotency · phát hiện weak 2 tầng (tầng 1 kích hoạt với 1 câu sai MUST_KNOW; tầng 2 cần ≥3 câu) · bỏ ngày → mở lại → carry forward + replan · rollback khi invariant vỡ</dd>
+<dt>Acceptance</dt><dd class="acc"><strong>Vòng lặp chạy được:</strong> hoàn thành ngày → điểm RAG thấp → ngày mai hiện block ôn RAG <em>trước</em> nội dung mới. Bỏ 2 ngày → mở app → lịch đã điều chỉnh, ngày đã hoàn thành không đổi. Bấm hoàn thành hai lần → kết quả giống nhau.</dd>
+<dt>Phụ thuộc</dt><dd>S7 (mastery từ quiz) · S5 (replan)</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s9">
+<div class="slice crit">
+<div class="slice-h"><b>S9</b><span class="nm">Final Review Exam</span><span class="wk">W7</span><span class="chip c-crit">Đường găng · D5 đã chốt</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Bài thi thử trước ngày thi, lắp từ bank câu hỏi đã có.</dd>
+<dt>Migrations</dt><dd>Không có mới — dùng lại <code>quiz_attempt</code> với <code>kind = FINAL_REVIEW</code></dd>
+<dt>Backend</dt><dd>Chọn câu deterministic theo trọng số domain · bấm giờ · lấp cửa sổ ôn tập bằng item <code>FINAL_REVIEW_EXAM</code></dd>
+<dt>Frontend</dt><dd>Dùng lại màn hình quiz, thêm đồng hồ và màn hình tổng kết theo domain</dd>
+<dt>AI/prompt</dt><dd><strong>Không có</strong> — lắp ghép hoàn toàn deterministic</dd>
+<dt>Tests</dt><dd>Phân phối chọn câu khớp trọng số domain trong sai số cho phép</dd>
+<dt>Acceptance</dt><dd class="acc">Trong cửa sổ ôn tập, làm được một đề có trọng số đúng theo domain, lấy từ những câu đã sinh trong suốt khoá học.</dd>
+<dt>Không cắt được</dt><dd><strong>D5 đã chốt Final Review Exam nằm trong MVP.</strong> Rồi đưa nó vào danh sách cắt được là âm thầm rút lại một quyết định đã duyệt — đây là sai sót ở bản rev 1 của kế hoạch này. Nếu bao giờ muốn bỏ tính năng này, <strong>D5 phải được mở lại một cách tường minh</strong>, không phải bị cắt như một biện pháp tối ưu lịch.<br>Phiên bản tối thiểu chấp nhận được: <em>bank câu hỏi đã validate → chọn theo trọng số domain/task chính thức → phiên làm bài → chấm deterministic → kết quả chia theo domain/topic.</em> Không cần exam simulator phức tạp. Phần <em>trình bày</em> (đồng hồ đẹp, màn hình tổng kết chi tiết) mới là thứ cắt được.</dd>
+<dt>Phụ thuộc</dt><dd>S7 (cần bank câu hỏi)</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section id="s10">
+<div class="slice crit">
+<div class="slice-h"><b>S10</b><span class="nm">Release Eval · Observability · Hardening</span><span class="wk">W8</span><span class="chip c-crit">Đường găng · cổng D12</span></div>
+<div class="slice-b">
+<dl>
+<dt>Mục tiêu</dt><dd>Đạt Definition of Done cho chất lượng nội dung AI, và làm cho hệ thống quan sát được.</dd>
+<dt>Migrations</dt><dd><code>V19</code> view tổng hợp chi phí · index cho analytics</dd>
+<dt>Backend</dt><dd>Dashboard admin: hàng đợi job · tổng hợp chi phí theo plan và operation · <strong>tỉ lệ validator từ chối</strong> · hàng đợi content flag · nút vô hiệu cache theo operation</dd>
+<dt>Frontend</dt><dd>Trang admin tối thiểu (không cần đẹp) · nối analytics event cho các chỉ số Scope §27</dd>
+<dt>AI/eval</dt><dd><ul>
+<li>Dựng bộ <strong>Release Eval</strong>: 20–24 LearningUnit phủ mọi domain AIF-C01 và mọi loại nội dung khác biệt về bản chất, kèm 80–100 câu quiz</li>
+<li><strong>Chạy lần 1</strong> → sửa → <strong>chạy lần 2</strong></li>
+<li>Hai lần liên tiếp đạt toàn bộ cổng cứng và mục tiêu 1–5 → <strong>đóng băng promptVersion</strong></li>
+</ul></dd>
+<dt>Tests</dt><dd><strong>Ba security integration test</strong> (không đọc được file người khác · không trả nội dung thiếu nhãn nguồn gốc · plan không đọc được material của plan khác) · Playwright happy path end-to-end · kiểm chuỗi migration chạy sạch từ DB rỗng</dd>
+<dt>Acceptance</dt><dd class="acc">Hai lần Release Eval liên tiếp đạt: 0 lỗi factual nghiêm trọng · 0 sourceSpan bịa · 0 quiz sai đáp án · 0 quiz nhiều đáp án đúng · ≥99% schema-valid · 100% provenance · ≥90% pack đạt không cần viết lại tay. Prompt được đóng băng và ghi lại phiên bản.</dd>
+<dt>Phụ thuộc</dt><dd>S6 · S7 · S8</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<span class="part">Quyết định giao hàng</span>
+
+<section id="critical">
+<h2 class="sec"><i>◆</i>Đường găng</h2>
+<p class="kicker">Mười hạng mục. Cắt bất kỳ cái nào là vòng học lõi không tồn tại, hoặc rút lại một quyết định đã duyệt.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Slice</th><th>Vì sao không cắt được</th><th class="tight">Tuần</th></tr></thead>
+<tbody>
+<tr><td class="k">S0 Skeleton + spikes</td><td>Ràng buộc kiến trúc phải có trước code. Spike có thể lật quyết định — chạy sau là quá muộn.</td><td class="tight">W0</td></tr>
+<tr><td class="k">S1 Identity · Catalog · Capacity</td><td>Không có blueprint thì không có gì để map; không có capacity check thì không có giá trị đầu tiên.</td><td class="tight">W1</td></tr>
+<tr><td class="k">S2 Upload · Extract · Jobs · Budget</td><td>Tài liệu là bắt buộc (D2). Job infra và cost ledger là nền của mọi thứ AI.</td><td class="tight">W2</td></tr>
+<tr><td class="k">S3 Structure · AI Gateway</td><td>Không có LearningUnit thì không có gì để xếp lịch hay sinh bài giảng.</td><td class="tight">W3</td></tr>
+<tr><td class="k">S4a Mapping<br>+ năng lực coverage</td><td>Pack cần <code>taskStatementId</code> cho nhãn ngữ cảnh thi; validator quiz <em>từ chối</em> câu không có nó. Stage 1 định nghĩa M3 là "map exam scope <em>+ coverage</em>", nên phần tính coverage deterministic cũng nằm ở đây (P2) — chỉ UI mới cắt được.</td><td class="tight">W3–4</td></tr>
+<tr><td class="k">S5 Scheduler</td><td>Là toàn bộ giá trị "hôm nay học gì".</td><td class="tight">W4</td></tr>
+<tr><td class="k">S6 Learning Pack · Today</td><td>Là sản phẩm. Không có nó thì đây chỉ là một cái to-do list.</td><td class="tight">W5</td></tr>
+<tr><td class="k">S7 Quiz · Mastery</td><td>Là tín hiệu phản hồi. Không có nó thì không có gì để điều chỉnh lịch theo.</td><td class="tight">W6</td></tr>
+<tr><td class="k">S8 Vòng lặp khép kín</td><td>Là thứ ChatGPT không làm được. Cắt nó là mất luôn value proposition số 3.</td><td class="tight">W7</td></tr>
+<tr><td class="k">S9 Final Review Exam</td><td><strong>D5 đã chốt nó nằm trong MVP.</strong> Bản tối thiểu: bank đã validate → chọn theo trọng số domain → chấm deterministic → kết quả theo domain. Chỉ phần trình bày mới cắt được.</td><td class="tight">W7</td></tr>
+<tr><td class="k">S10 Release Eval</td><td>Là Definition of Done của D12. Không có nó thì không biết khi nào xong.</td><td class="tight">W8</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="deferrable">
+<h2 class="sec"><i>◆</i>Danh sách cắt được</h2>
+<p class="kicker">Mười hạng mục <strong>trình bày</strong>. Cắt hết tiết kiệm ~1.5 tuần và vòng học lõi vẫn nguyên vẹn. Không hạng mục nào trong đây rút lại một quyết định đã duyệt.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Hạng mục</th><th>Cắt thì mất gì</th><th class="tight">Tiết kiệm</th><th class="tight">Nên cắt?</th></tr></thead>
+<tbody>
+<tr><td class="k">1</td><td>S4b — <strong>UI</strong> ma trận coverage + trực quan hoá lỗ hổng + gap primer</td><td>Coverage vẫn được tính và vẫn nuôi planning; người dùng chỉ không thấy nó. <em>Năng lực coverage không cắt được (P2).</em></td><td class="num">3 ngày</td><td class="tight">Cắt sớm</td></tr>
+<tr><td class="k">2</td><td>UI sửa ranh giới section (S3)</td><td>Mất van an toàn cho AR-2 khi cấu trúc bị nhận sai</td><td class="num">2 ngày</td><td class="tight"><strong>Chỉ cắt nếu spike S1 tốt</strong></td></tr>
+<tr><td class="k">3</td><td>Tick "phần này tôi đã biết"</td><td>Người đã biết cơ bản vẫn phải học lại</td><td class="num">1 ngày</td><td class="tight">Cắt được</td></tr>
+<tr><td class="k">4</td><td>Hiển thị diff kế hoạch (S8) → thay bằng toast</td><td>Người dùng không thấy chính xác lịch đổi gì</td><td class="num">2 ngày</td><td class="tight">Cắt được</td></tr>
+<tr><td class="k">5</td><td>Tab Tiến độ đầy đủ (S8) → chỉ tổng hợp theo domain</td><td>Không có nhật ký điều chỉnh và danh sách topic yếu chi tiết</td><td class="num">2 ngày</td><td class="tight">Cắt được</td></tr>
+<tr><td class="k">6</td><td><strong>Phần trình bày</strong> của Final Review Exam (đồng hồ, màn hình tổng kết chi tiết)</td><td>Bài thi thử vẫn chạy ở mức tối thiểu. <em>Bản thân tính năng không cắt được — D5 (P1).</em></td><td class="num">1 ngày</td><td class="tight">Cắt được</td></tr>
+<tr><td class="k">7</td><td>Khử trùng lặp glossary (S6)</td><td>Thuật ngữ được giải thích lại nhiều lần; tốn thêm token</td><td class="num">1 ngày</td><td class="tight">Cắt được</td></tr>
+<tr><td class="k">8</td><td>Warm-up review 3 câu (S7)</td><td>Mất hiệu ứng spaced repetition nhẹ</td><td class="num">1 ngày</td><td class="tight">Cắt được, nhưng rẻ</td></tr>
+<tr><td class="k">9</td><td>Màn hình quản lý Materials</td><td>Chỉ upload được trong onboarding, không thêm/xoá sau</td><td class="num">1.5 ngày</td><td class="tight">Cắt sớm</td></tr>
+<tr><td class="k">10</td><td>Hàng đợi content flag trên UI admin (S10)</td><td>Phải chạy SQL để xem nội dung bị báo sai</td><td class="num">1 ngày</td><td class="tight">Cắt được</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout rule">
+<span class="lab">Thứ tự cắt khi bị trễ</span>
+<p>Cắt theo thứ tự: <strong>9 → 1 → 3 → 10 → 7 → 6 → 4 → 5 → 8 → 2</strong>.</p>
+<p>Cắt hạng mục 2 (sửa ranh giới section) sau cùng vì nó là van an toàn cho rủi ro kỹ thuật lớn nhất — và chỉ cắt khi spike S1 cho thấy nhận diện cấu trúc đủ tốt.</p>
+</div>
+
+<div class="callout stop">
+<span class="lab">Không nằm trong danh sách cắt được</span>
+<p><strong>Không cắt:</strong> ArchUnit rules (kèm cơ chế chống pass rỗng của P3) · cost ledger và budget reservation · pipeline validate quiz 8 kiểm tra · panel slide gốc · nhãn "do AI tạo" · property test scheduler · ba security test · Release Eval · <strong>Final Review Exam (D5)</strong> · <strong>năng lực tính coverage (M3)</strong>. Đây đều là những thứ có vẻ như "làm sau cũng được" nhưng thực tế là những thứ bảo vệ chính xác các quyết định mà Stage 1 và Stage 2 đã chốt. Cắt chúng là âm thầm rút lại cam kết.</p>
+</div>
+</section>
+
+<section id="spikes">
+<h2 class="sec"><i>◆</i>Phụ thuộc spike</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Spike</th><th>Đo gì</th><th>Quyết định nó mở khoá</th><th>Nếu kết quả xấu</th></tr></thead>
+<tbody>
+<tr><td class="k">S1<br>trích xuất</td><td><strong>Không dùng "% trang có text" làm tiêu chí go/no-go.</strong> Một deck hợp lệ có thể có nhiều sơ đồ, ảnh chụp màn hình và slide hỗn hợp.<br><br>Phân loại trang đại diện thành <code>TEXT_DOMINANT</code> · <code>MIXED</code> · <code>IMAGE_DOMINANT</code>, rồi đo trên từng nhóm: trích được tiêu đề · thứ tự và phân cấp bullet · thân bài · bảng khi có · speaker notes khi có · định danh trang/slide ổn định · <code>sourceSpan</code> chính xác · <strong>phát hiện được slide có nội dung hình ảnh đáng kể ngay cả khi không diễn giải được hình đó</strong>.</td><td><strong>AR-4</strong> có dùng LibreOffice không · <strong>S2</strong> phạm vi tầng EXTRACT · <strong>S3</strong> có cần UI sửa ranh giới trong MVP không</td><td>MVP <em>không</em> cần OCR hay hiểu hình cho mọi visual. Nó cần <strong>không được coi một slide nhiều hình là đã biểu diễn đầy đủ bằng text trích ra</strong>. Khi nội dung hình đáng kể, mô hình cấu trúc phải giữ được metadata kiểu <code>hasSignificantVisual = true</code> để Learning Pack chỉ người học quay lại slide gốc.<br><br><strong>Ngưỡng dừng đặt theo khả năng phục hồi nội dung liên quan tới việc học</strong>, không theo số trang thô. Không đạt → dừng, xem lại phạm vi MVP; cân nhắc đưa vision vào MVP hoặc thu hẹp loại tài liệu được nhận.</td></tr>
+<tr><td class="k">S2<br>bài giảng VN</td><td>Người học Việt đánh giá: dễ hiểu hơn slide gốc không · thuật ngữ có tự nhiên không</td><td><strong>S6</strong> cách tiếp cận prompt · ước lượng số vòng lặp cần thiết</td><td>Cần nhiều vòng hơn dự kiến → cắt sớm hơn trong danh sách cắt được để lấy thời gian cho W5–W6.</td></tr>
+<tr><td class="k">S3<br>quiz</td><td>Tỉ lệ đáp án đúng thật · tỉ lệ bị pipeline loại · sourceSpan có phân giải được không</td><td><strong>S7</strong> thiết kế pipeline validate · số câu sinh dư cần thiết</td><td>Tỉ lệ loại &gt;50% → sinh dư nhiều hơn, cập nhật ước tính chi phí, xem lại tier model cho quiz.</td></tr>
+<tr><td class="k">S4<br>token</td><td>Chi phí thật của S1–S3, ngoại suy cho một plan đầy đủ</td><td><strong>D6</strong> trần chi phí · <strong>D11</strong> provider và tier · <strong>S3</strong> chọn model cho từng operation</td><td>&gt;$5/plan → áp đòn bẩy C6 (pre-generate 1 ngày), C7 (mở rộng CONDENSED), hạ tier cho unit LOW/MEDIUM. Cập nhật D6 bằng số thật.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="dod">
+<h2 class="sec"><i>◆</i>Definition of Done — áp dụng cho mọi slice</h2>
+
+<div class="flow">Một slice chỉ được đánh dấu HOÀN THÀNH khi tất cả đúng:
+
+  ✓  build xanh
+  ✓  unit test + integration test của slice pass
+  ✓  ArchUnit pass                          ← không có ngoại lệ tạm thời
+  ✓  chuỗi migration chạy sạch từ DB RỖNG   ← chạy trong CI mỗi lần
+  ✓  migration tương thích ngược một version
+       (không xoá cột trong cùng release với việc ngừng dùng nó)
+  ✓  acceptance criteria của slice được demo thật, không phải mô tả
+  ✓  không để lại TODO nào trên đường găng
+  ✓  cost ledger ghi đúng nếu slice có gọi AI
+  ✓  endpoint mới có kiểm quyền qua PlanAccessGuard
+
+Với slice có AI, thêm:
+  ✓  domain validator có test riêng cho từng luật
+  ✓  fallback chain được test bằng cách ép AI trả rác
+  ✓  Smoke Eval chạy và ghi lại kết quả</div>
+
+<h4>Nhịp làm việc mỗi slice</h4>
+<p>Theo đúng quy trình bạn đặt ra ở Stage 4: <code>Scope → Design → Implement → Unit Test → Integration Test → Run → Review → Fix → Mark Complete</code>. Với 1 dev, bước <em>Review</em> là tự review có cấu trúc — chạy <code>/code-review</code> trên diff của slice trước khi đánh dấu hoàn thành, và đối chiếu lại acceptance criteria đã viết ở đây chứ không phải trí nhớ.</p>
+</section>
+
+<section id="gate">
+<div class="gate">
+  <div class="gate-hd"><span>Implementation Review Gate</span><span>Stage 3 → Stage 4</span></div>
+  <div class="gate-bd">
+    <dl>
+      <dt>Phân rã</dt>
+      <dd>11 vertical slice + tuần 0 spike. Mỗi slice xuyên từ migration lên tới màn hình và demo được cho người thật. Không có slice "hạ tầng thuần".</dd>
+
+      <dt>Thứ tự</dt>
+      <dd><code>S0 → S1 → S2 → S3 → S4a → S5 → S6 → S7 → S8 → S10</code> trên đường găng. <code>S4b</code> và <code>S9</code> treo nhánh, không ai phụ thuộc.</dd>
+
+      <dt>Migrations</dt>
+      <dd>19 migration Flyway, đánh số theo slice. Mỗi slice có ranh giới migration riêng; CI kiểm chuỗi chạy sạch từ DB rỗng mỗi lần.</dd>
+
+      <dt>Đường găng</dt>
+      <dd>10 hạng mục — S0, S1, S2, S3, S4a (gồm năng lực coverage), S5, S6, S7, S8, <strong>S9</strong>, S10. Cắt bất kỳ cái nào là vòng học lõi không tồn tại hoặc rút lại một quyết định đã duyệt.</dd>
+
+      <dt>Cắt được</dt>
+      <dd>10 hạng mục <strong>trình bày</strong>, tiết kiệm ~1.5 tuần: quản lý Materials · <em>UI</em> coverage matrix + gap primer · tick đã biết · hàng đợi flag admin · khử trùng glossary · <em>trình bày</em> Final Review Exam · diff kế hoạch · tab tiến độ đầy đủ · warm-up · UI sửa ranh giới section. Thứ tự cắt: <strong>9 → 1 → 3 → 10 → 7 → 6 → 4 → 5 → 8 → 2</strong>.<br>Không hạng mục nào rút lại một quyết định đã duyệt.</dd>
+
+      <dt>Không được cắt</dt>
+      <dd>ArchUnit rules kèm cơ chế chống pass rỗng (P3) · cost ledger + budget reservation · pipeline validate quiz · panel slide gốc · nhãn "do AI tạo" · property test scheduler · ba security test · Release Eval · <strong>Final Review Exam (D5, P1)</strong> · <strong>năng lực tính coverage (M3, P2)</strong>. Cắt chúng là âm thầm rút lại cam kết của Stage 1 và Stage 2.</dd>
+
+      <dt>Điểm dễ vỡ</dt>
+      <dd><strong>W5–W6 (S6).</strong> Code khoảng 4–5 ngày; phần còn lại là vòng lặp prompt và chờ đánh giá. Quy tắc đã định sẵn: nếu chưa đạt sau W6, chuyển sang S7–S8 để hoàn thiện vòng lặp khép kín rồi quay lại prompt ở W8 — không dồn tuần vào S6.</dd>
+
+      <dt>Phụ thuộc spike</dt>
+      <dd>Cả 4 spike chạy ở W0. <strong>S1 là spike có quyền dừng dự án</strong>: ngưỡng đặt theo <em>khả năng phục hồi nội dung liên quan tới việc học</em> trên từng lớp slide (TEXT_DOMINANT / MIXED / IMAGE_DOMINANT), không theo % trang thô — một deck nhiều sơ đồ vẫn có thể hợp lệ miễn là hệ thống <em>biết</em> nó nhiều sơ đồ. S4 hiệu chỉnh D6 và mở khoá D11.</dd>
+
+      <dt>Biến thể 6 tuần</dt>
+      <dd>Cắt toàn bộ 10 hạng mục trình bày, gộp S8 vào W5–W6, Release Eval trong W6. Chỉ chạy được <em>một</em> lần Release Eval thay vì hai → không thoả điều kiện dừng D12 → <strong>kết quả phải được gán nhãn <code>Internal Alpha / Pilot</code>, không phải MVP sẵn sàng production.</strong> D12 không được làm yếu để vừa lịch.</dd>
+
+      <dt>Definition of Done</dt>
+      <dd>9 điều kiện chung cho mọi slice (gồm ArchUnit không ngoại lệ và migration chạy sạch từ DB rỗng), cộng 3 điều kiện riêng cho slice có AI.</dd>
+
+      <dt>Chưa có trong tài liệu này</dt>
+      <dd>Không có code, không có scaffold, không có entity, không có SQL, không có Docker file, không có CI config, không có prompt thật. Đó là Stage 4.</dd>
+
+      <dt>Corrections applied</dt>
+      <dd><strong>P1</strong> Final Review Exam trả về đường găng — D5 đã chốt nó trong MVP; chỉ phần trình bày cắt được, và bỏ tính năng đòi mở lại D5 tường minh. <strong>P2</strong> tách năng lực coverage (MVP, thoả M3) khỏi UI coverage (cắt được). <strong>P3</strong> ArchUnit có coverage test chống pass rỗng + verification fixture chứng minh luật bắt được vi phạm. <strong>P4</strong> ngưỡng spike S1 đặt theo khả năng phục hồi nội dung liên quan tới việc học trên từng lớp slide, kèm metadata <code>hasSignificantVisual</code>. <strong>Thuật ngữ:</strong> lịch 6 tuần chỉ một lần Release Eval = Internal Alpha / Pilot.</dd>
+
+      <dt>Ready for implementation</dt>
+      <dd><span class="verdict">APPROVED — S0 đang chạy</span><br>S0 Walking Skeleton đã được implement với dữ liệu giả và chạy được end-to-end. Spike S1–S4 trên tài liệu AIF-C01 thật vẫn là điều kiện bắt buộc trước khi mở các slice phụ thuộc.</dd>
+    </dl>
+  </div>
+</div>
+
+<p class="foot">Stage 3 dừng tại đây. Sau khi duyệt, Stage 4 implement <strong>từng slice một</strong> theo nhịp Scope → Design → Implement → Unit Test → Integration Test → Run → Review → Fix → Mark Complete. Không generate toàn bộ project một lần.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function(a){
+    var el = document.querySelector(a.getAttribute('href'));
+    if (el) map[a.getAttribute('href').slice(1)] = a;
+  });
+  if (!('IntersectionObserver' in window)) return;
+  var current = null;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        if (current) current.classList.remove('on');
+        current = map[e.target.id];
+        if (current) current.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+})();
+</script>

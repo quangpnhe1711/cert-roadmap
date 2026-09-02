@@ -1,0 +1,28 @@
+# Local development. Everything runs on this machine.
+#
+# No API key, no cloud storage, no external service: the deterministic fake
+# adapter answers every AI operation, so the whole loop - validators, retries,
+# budget, cost ledger, caching - is exercised offline. Content quality is
+# meaningless in this mode, which is why the UI labels it.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/certcopilot}
+    username: ${DB_USER:certcopilot}
+    password: ${DB_PASSWORD:certcopilot}
+
+app:
+  ai:
+    # Defaults to the deterministic fake. Set AI_ADAPTER=gemini (with
+    # GEMINI_API_KEY) to run the same local stack against a real provider - no
+    # code change, and no second profile to keep in step.
+    adapter: ${AI_ADAPTER:fake}
+    # Prompt files reload on every call, so editing one does not need a restart.
+    prompt-hot-reload: true
+  storage:
+    adapter: local
+    # Repo-root local-data/, next to the generated sample deck. Created on start.
+    local-root: ${LOCAL_STORAGE_ROOT:../local-data/storage}
+
+logging:
+  level:
+    com.certcopilot: DEBUG

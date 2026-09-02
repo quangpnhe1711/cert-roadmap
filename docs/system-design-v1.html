@@ -1,0 +1,1512 @@
+<title>Cert Study Copilot Architecture</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#F1F4F3; --surface:#FFFFFF; --surface-2:#E8EEEC;
+  --ink:#111819; --ink-2:#38474A; --muted:#65787A;
+  --line:#D2DBD9; --line-strong:#B4C2BF;
+  --accent:#0E5A63; --accent-soft:#DBEBEC; --accent-ink:#0B4249;
+  --on-accent:#FFFFFF;
+  --signal:#8F5405; --signal-soft:#F7E9D1;
+  --good:#2B6D48; --good-soft:#DBEADF;
+  --bad:#943321; --bad-soft:#F3DFDA;
+  --defer:#56606B; --defer-soft:#E3E7EA;
+  --shadow:0 1px 2px rgba(17,24,25,.05), 0 8px 24px -16px rgba(17,24,25,.25);
+  --sans:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+    --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+    --line:#233032; --line-strong:#324446;
+    --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+    --on-accent:#08191B;
+    --signal:#E0A855; --signal-soft:#2E2310;
+    --good:#68BE8A; --good-soft:#12271B;
+    --bad:#DF8570; --bad-soft:#2C1611;
+    --defer:#98A4AF; --defer-soft:#1C2226;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1113; --surface:#121A1C; --surface-2:#182123;
+  --ink:#E7EDEC; --ink-2:#B6C3C2; --muted:#83999A;
+  --line:#233032; --line-strong:#324446;
+  --accent:#5CC5CE; --accent-soft:#0F2F33; --accent-ink:#8FDCE2;
+  --on-accent:#08191B;
+  --signal:#E0A855; --signal-soft:#2E2310;
+  --good:#68BE8A; --good-soft:#12271B;
+  --bad:#DF8570; --bad-soft:#2C1611;
+  --defer:#98A4AF; --defer-soft:#1C2226;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-soft);color:var(--accent-ink)}
+a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.masthead{border-bottom:1px solid var(--line-strong);background:var(--surface)}
+.masthead-in{max-width:1240px;margin:0 auto;padding:34px 28px 26px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.eyebrow b{color:var(--signal);font-weight:500}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.06;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance;max-width:20ch}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:64ch;margin:0 0 24px}
+.meta{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);padding-top:16px;margin:0}
+.meta div{padding-right:30px;margin-right:30px;border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0;margin-right:0;padding-right:0}
+.meta dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+.meta dd{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:0}
+.meta dd.hold{color:var(--signal)}
+
+.shell{max-width:1240px;margin:0 auto;padding:0 28px 120px;display:grid;grid-template-columns:236px minmax(0,1fr);gap:56px;align-items:start}
+nav.toc{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:36px 0 40px;font-family:var(--sans);font-size:13.5px;line-height:1.4}
+nav.toc h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:22px 0 9px}
+nav.toc h2:first-child{margin-top:0}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 8px 4px 9px;color:var(--ink-2);text-decoration:none;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--accent)}
+nav.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+nav.toc a span{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:1px}
+nav.toc a.on span{color:var(--accent)}
+main{padding:44px 0 0;min-width:0}
+
+section{padding-top:14px;margin-bottom:52px;scroll-margin-top:20px}
+.part{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);display:inline-block;padding:5px 11px;margin:46px 0 26px;border-radius:2px}
+main > .part:first-child{margin-top:0}
+h2.sec{font-family:var(--sans);font-size:26px;font-weight:700;letter-spacing:-.015em;line-height:1.18;margin:0 0 6px;text-wrap:balance;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+h2.sec i{font-family:var(--mono);font-style:normal;font-size:13px;font-weight:500;color:var(--accent);letter-spacing:0}
+.kicker{font-family:var(--sans);font-size:14px;color:var(--muted);margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line);max-width:none}
+h3{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-.008em;margin:30px 0 8px;text-wrap:balance}
+h4{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:22px 0 6px;color:var(--ink)}
+p{margin:0 0 14px;max-width:70ch}
+ul,ol.body{margin:0 0 14px;padding-left:22px;max-width:70ch}
+li{margin-bottom:5px}
+li::marker{color:var(--muted)}
+strong{font-weight:600}
+em{font-style:italic;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);padding:1.5px 5px;border-radius:3px;color:var(--ink)}
+
+.flow{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;padding:16px 18px;overflow-x:auto;margin:0 0 18px;color:var(--ink-2);white-space:pre}
+.flow.warn{border-left-color:var(--signal)}
+.callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;margin:0 0 18px;border-radius:0 3px 3px 0;max-width:76ch}
+.callout p{margin:0 0 8px;max-width:none}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.callout ul{max-width:none}
+.callout .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:6px;font-weight:500}
+.callout.rule{border-left-color:var(--accent);background:var(--accent-soft)}
+.callout.rule .lab{color:var(--accent-ink)}
+.callout.stop{border-left-color:var(--bad);background:var(--bad-soft)}
+.callout.stop .lab{color:var(--bad)}
+
+.chip{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2.5px 7px;border-radius:3px;white-space:nowrap;display:inline-block;vertical-align:.08em}
+.c-must{background:var(--good-soft);color:var(--good)}
+.c-should{background:var(--accent-soft);color:var(--accent-ink)}
+.c-could{background:var(--defer-soft);color:var(--defer)}
+.c-wont,.c-cut{background:var(--bad-soft);color:var(--bad)}
+.c-ai{background:var(--signal-soft);color:var(--signal)}
+.c-det{background:var(--accent-soft);color:var(--accent-ink)}
+.m{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.04em}
+.m-get{background:var(--accent-soft);color:var(--accent-ink)}
+.m-post{background:var(--good-soft);color:var(--good)}
+.m-patch{background:var(--signal-soft);color:var(--signal)}
+
+.wide{max-width:none;overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13.5px;line-height:1.45}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:11px 13px;border-bottom:1px solid var(--line-strong);vertical-align:bottom;background:var(--surface-2);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+td.k{color:var(--ink);font-weight:600}
+td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-family:var(--mono);font-size:12px}
+td.tight,th.tight{white-space:nowrap}
+.sev{font-family:var(--mono);font-size:11px;font-weight:700}
+.sev.hi{color:var(--bad)}.sev.md{color:var(--signal)}.sev.lo{color:var(--good)}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin:0 0 20px;max-width:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px}
+.card h4{margin:0 0 8px}
+.card p,.card ul{max-width:none}
+.card p:last-child,.card ul:last-child{margin-bottom:0}
+.card.is{border-top:3px solid var(--good)}
+.card.isnot{border-top:3px solid var(--bad)}
+.card ul{padding-left:18px;font-size:15px}
+
+.adr{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 3px 3px 0;background:var(--surface);padding:0;margin:0 0 16px;max-width:none}
+.adr-h{display:flex;gap:12px;align-items:baseline;padding:12px 18px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.adr-h b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+.adr-h span{font-family:var(--sans);font-size:16px;font-weight:600;color:var(--ink)}
+.adr-b{padding:13px 18px;display:grid;grid-template-columns:96px 1fr;gap:0}
+.adr-b dt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 0}
+.adr-b dd{margin:0;padding:6px 0;font-size:15px;color:var(--ink-2)}
+.adr-b dd strong{color:var(--ink)}
+
+.gate{border:2px solid var(--accent);border-radius:4px;background:var(--surface);padding:0;margin:36px 0 0;max-width:none;box-shadow:var(--shadow)}
+.gate-hd{background:var(--accent);color:var(--on-accent);padding:14px 22px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gate-bd{padding:24px 26px}
+.gate-bd dl{margin:0;display:grid;grid-template-columns:186px 1fr;gap:0}
+.gate-bd dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:13px 0;border-top:1px solid var(--line)}
+.gate-bd dd{margin:0;padding:13px 0;border-top:1px solid var(--line);font-size:15.5px}
+.gate-bd dt:first-of-type,.gate-bd dt:first-of-type + dd{border-top:0}
+.gate-bd dd ul{margin:0;padding-left:19px;max-width:none}
+.gate-bd dd p{max-width:none;margin:0 0 8px}
+.gate-bd dd p:last-child{margin:0}
+.verdict{font-family:var(--sans);font-weight:700;font-size:17px;color:var(--good)}
+.verdict.cond{color:var(--signal)}
+
+.foot{max-width:70ch;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;margin-top:44px}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:0;padding:0 20px 80px}
+  nav.toc{position:static;max-height:none;padding:24px 0 20px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0}
+  .masthead-in{padding:26px 20px 22px}
+  .meta div{border-right:0;padding-right:0;margin-right:24px;margin-bottom:10px}
+  .gate-bd dl,.adr-b{grid-template-columns:1fr}
+  .gate-bd dt{padding-bottom:0}
+  .gate-bd dd{padding-top:4px;border-top:0}
+  .gate-bd dt:first-of-type + dd{border-top:0}
+  .adr-b dt{padding-bottom:0}
+  .adr-b dd{padding-top:2px}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="eyebrow">Stage 2 · System Design · rev 2 · <b>Đã áp dụng A1–A4 · D9 · D12</b></p>
+    <h1>Cert Study Copilot — System Design</h1>
+    <p class="standfirst">Kiến trúc cho Web MVP: modular monolith Java, React SPA, một dev chính, 6–8 tuần. Đủ chặt để mobile dùng lại về sau, không có gì thừa để hôm nay phải bảo trì.</p>
+    <dl class="meta">
+      <div><dt>Ràng buộc</dt><dd>D1–D7 · D9 · D12</dd></div>
+      <div><dt>Đội</dt><dd>1 dev · 6–8 tuần</dd></div>
+      <div><dt>Ngân sách AI</dt><dd>≤ $5 / plan</dd></div>
+      <div><dt>Trạng thái</dt><dd>Approved · rev 2</dd></div>
+      <div><dt>Tiếp theo</dt><dd>Stage 3 — Impl. Plan</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="shell">
+<nav class="toc" aria-label="Mục lục">
+  <h2>Nền tảng</h2>
+  <ol>
+    <li><a href="#stack"><span>◆</span>Stack &amp; Justification</a></li>
+  </ol>
+  <h2>I · Ranh giới &amp; mô hình</h2>
+  <ol>
+    <li><a href="#s1"><span>01</span>System Boundaries</a></li>
+    <li><a href="#s2"><span>02</span>Domain Model</a></li>
+    <li><a href="#s3"><span>03</span>Module Boundaries</a></li>
+  </ol>
+  <h2>II · Hành vi</h2>
+  <ol>
+    <li><a href="#s4"><span>04</span>Flows &amp; State</a></li>
+    <li><a href="#s5"><span>05</span>Document Pipeline</a></li>
+    <li><a href="#s6"><span>06</span>AI / Non-AI Boundary</a></li>
+    <li><a href="#s7"><span>07</span>Scheduling Engine</a></li>
+  </ol>
+  <h2>III · Hợp đồng &amp; dữ liệu</h2>
+  <ol>
+    <li><a href="#s8"><span>08</span>Data Model</a></li>
+    <li><a href="#s9"><span>09</span>API Boundaries</a></li>
+    <li><a href="#s10"><span>10</span>Async Jobs</a></li>
+    <li><a href="#s11"><span>11</span>Storage Strategy</a></li>
+  </ol>
+  <h2>IV · Vận hành</h2>
+  <ol>
+    <li><a href="#s12"><span>12</span>Cost &amp; Observability</a></li>
+    <li><a href="#s13"><span>13</span>Failure &amp; Idempotency</a></li>
+    <li><a href="#s14"><span>14</span>Security &amp; Privacy</a></li>
+    <li><a href="#s15"><span>15</span>Deployment</a></li>
+  </ol>
+  <h2>V · Chốt</h2>
+  <ol>
+    <li><a href="#risks"><span>◆</span>Architecture Risks</a></li>
+    <li><a href="#open"><span>◆</span>Open Decisions</a></li>
+    <li><a href="#gate"><span>◆</span>Stage Gate 2</a></li>
+  </ol>
+</nav>
+
+<main>
+<span class="part">Nền tảng</span>
+
+<section id="stack">
+<h2 class="sec"><i>◆</i>Stack &amp; Justification</h2>
+<p class="kicker">Mỗi lựa chọn phải trả lời được: nó tiết kiệm tuần nào của một dev duy nhất, hoặc nó gỡ rủi ro nào?</p>
+
+<div class="wide">
+<table>
+<thead><tr><th>Lớp</th><th>Chọn</th><th>Lý do cụ thể cho dự án này</th><th>Đã cân nhắc</th></tr></thead>
+<tbody>
+<tr><td class="k">Ngôn ngữ</td><td class="mono">Java 21 LTS</td><td><strong>Virtual threads.</strong> Workload của hệ thống này gần như hoàn toàn I/O-bound: gọi LLM (5–40s), object storage, DB. Virtual threads cho phép viết code blocking đơn giản mà vẫn chịu được hàng trăm job song song — không cần reactive. Đây là lý do kỹ thuật thật, không phải phiên bản mới nhất.</td><td>Java 17 (thiếu virtual thread ổn định)</td></tr>
+<tr><td class="k">Framework</td><td class="mono">Spring Boot 3.x</td><td>Với 1 dev, phần security + validation + transaction + data + actuator + scheduling có sẵn tiết kiệm khoảng 2 tuần. Không phải vì phổ biến — vì đó là 2 tuần trong ngân sách 6–8 tuần.</td><td>Quarkus (lợi thế startup không liên quan), Javalin thuần (nhiều tự do, nhiều việc hơn)</td></tr>
+<tr><td class="k">Ranh giới module</td><td class="mono">Spring Modulith + ArchUnit</td><td>Modulith cưỡng chế ranh giới package và sinh tài liệu module. ArchUnit là lớp bắt buộc — nó là cách <em>cưỡng chế bằng test</em> quy tắc "LLM không được chạm vào scheduling/scoring" (mục 06). Không có nó, quy tắc chỉ là lời hứa.</td><td>Chỉ quy ước (không cưỡng chế được), multi-module Gradle (nặng cho 1 dev)</td></tr>
+<tr><td class="k">CSDL</td><td class="mono">PostgreSQL 16</td><td>Bốn lý do đồng thời: <strong>(a)</strong> JSONB cho content block / snapshot / options cạnh toàn vẹn quan hệ; <strong>(b)</strong> <code>SELECT … FOR UPDATE SKIP LOCKED</code> cho hàng đợi job — bỏ được message broker; <strong>(c)</strong> full-text search cho inverted index thuật ngữ; <strong>(d)</strong> <strong>pgvector thêm được tại chỗ</strong> khi cần semantic retrieval — thoả đúng ràng buộc "không chặn đường" của D6.</td><td>MySQL 8 (JSON yếu hơn, không có pgvector — vi phạm ràng buộc kiến trúc)</td></tr>
+<tr><td class="k">Migration</td><td class="mono">Flyway</td><td>SQL thuần, forward-only, dễ đọc khi debug production lúc 2 giờ sáng.</td><td>Liquibase (XML/YAML thêm một tầng dịch)</td></tr>
+<tr><td class="k">Truy cập dữ liệu</td><td class="mono">JPA cho aggregate<br>SQL/JDBC cho read model</td><td>Aggregate (StudyPlan, Material) có quan hệ sâu → JPA hợp. Read model (<code>/today</code>, <code>/progress</code>) là join phẳng nhiều bảng → SQL thuần nhanh hơn viết và nhanh hơn chạy, tránh N+1.</td><td>jOOQ toàn phần (tốt cho read, chậm hơn cho aggregate)</td></tr>
+<tr><td class="k">Parse tài liệu</td><td class="mono">PDFBox · Apache POI</td><td>Trưởng thành, giấy phép Apache-2.0, cho được font metrics và bookmark — đúng thứ tầng SEGMENT cần.</td><td>Tika (bọc chính hai thư viện này, mất chi tiết)</td></tr>
+<tr><td class="k">PPTX → PDF</td><td class="mono">LibreOffice headless</td><td>Cần cho panel tài liệu gốc (D1 companion bắt buộc trace được). Đây là <strong>phụ thuộc runtime nặng nhất</strong> của hệ thống — xem AR-4.</td><td>Không convert (mất panel với PPTX — phá vỡ D1)</td></tr>
+<tr><td class="k">LLM</td><td class="mono">Cổng trừu tượng<br>+ 2 model tier</td><td>Domain không bao giờ biết tên provider. Tier là tên logic (<code>FAST</code>, <code>QUALITY</code>) ánh xạ qua config → đổi model là đổi config, không đổi code. Bắt buộc: provider có structured output và chính sách không train trên dữ liệu.</td><td>Gọi SDK trực tiếp (khoá cứng vendor, không đo được chi phí tập trung)</td></tr>
+<tr><td class="k">Frontend</td><td class="mono">React 18 + TS + Vite<br>TanStack Query</td><td>TanStack Query là lựa chọn có chủ đích: sản phẩm này <em>chờ job async</em> ở nhiều chỗ (phân tích tài liệu, sinh pack). Polling có backoff, cache, invalidation là đúng bài toán của nó. Không cần state manager toàn cục.</td><td>Redux (state client gần như không có), SSE/WebSocket (thêm hạ tầng cho vài màn hình chờ)</td></tr>
+<tr><td class="k">PDF viewer</td><td class="mono">pdf.js</td><td>Render page range phía client từ một signed URL → không cần pipeline render ảnh phía server. Tiết kiệm cả tuần và cả chi phí lưu trữ.</td><td>Render ảnh server-side (đắt, chậm, thừa)</td></tr>
+<tr><td class="k">Kiểm thử</td><td class="mono">JUnit 5 · Testcontainers<br>ArchUnit · jqwik · Playwright</td><td>jqwik cho property test của scheduler — engine là hàm thuần nên property test là công cụ đúng ("không ngày nào vượt capacity" với mọi input sinh ngẫu nhiên). Testcontainers cho Postgres thật. <strong>Không gọi LLM thật trong CI</strong> — dùng fixture đã ghi.</td><td>Mock DB (không bắt được lỗi SQL/migration)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout stop">
+<span class="lab">Cố ý không dùng</span>
+<p><strong>Kafka/RabbitMQ</strong> — hàng đợi job nằm trong Postgres với <code>SKIP LOCKED</code>; khối lượng là hàng chục job/phút, không phải hàng nghìn. · <strong>Redis</strong> — cache là bảng theo <code>input_hash</code>, session trong DB, rate limit in-memory (hợp lệ khi còn 1 instance API; đây chính là điều kiện kích hoạt việc thêm Redis sau này). · <strong>Vector DB</strong> — không cần cho MVP; pgvector là đường mở sẵn. · <strong>Kubernetes / service mesh / microservices</strong> — một deployable, một dev. · <strong>Elasticsearch</strong> — Postgres FTS đủ cho inverted index thuật ngữ.</p>
+</div>
+</section>
+
+<span class="part">Phần I — Ranh giới &amp; mô hình</span>
+
+<section id="s1">
+<h2 class="sec"><i>01</i>System Boundaries</h2>
+
+<div class="flow">┌─────────────────────────────────────────────────────────────────────────┐
+│  NGOÀI HỆ THỐNG                                                         │
+│                                                                         │
+│   Learner ──browser──┐                    ┌──▶ LLM Provider             │
+│                      │                    │    (structured output,      │
+│   Curator ──browser──┤                    │     no-training policy)     │
+│   (nội bộ)           │                    │                             │
+│                      ▼                    │                             │
+│  ┌───────────────────────────────────┐    │    ┌──▶ Object Storage      │
+│  │  TRONG HỆ THỐNG                   │────┤    │    (S3-compatible)     │
+│  │                                   │────┼────┘                        │
+│  │   React SPA  ──REST/JSON──▶  Java │────┼───▶ Email (auth)            │
+│  │                          Monolith │    │                             │
+│  │                              │    │    └───▶ (v1.1) Web Push         │
+│  │                              ▼    │                                  │
+│  │                        PostgreSQL │                                  │
+│  └───────────────────────────────────┘                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+KHÔNG có trong hệ thống: search engine · message broker · vector DB
+                        cache server · analytics SaaS · CDN động</div>
+
+<h3>Ba trust boundary và ý nghĩa của chúng</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Ranh giới</th><th>Hệ quả thiết kế</th></tr></thead>
+<tbody>
+<tr><td class="k">TB-1</td><td>Browser ↔ Backend</td><td>Client không được tin. <strong>Mọi business rule ở server</strong> (D7 + ràng buộc mobile). Client không tự tính điểm, không tự đổi trạng thái ngày, không tự chọn câu warm-up.</td></tr>
+<tr><td class="k">TB-2</td><td>Backend ↔ LLM Provider</td><td><strong>Tài liệu của người dùng rời khỏi hạ tầng của ta.</strong> Đây là ranh giới nhạy cảm nhất về pháp lý và niềm tin: bắt buộc endpoint không train trên dữ liệu, có DPA, và ghi log <em>cái gì</em> đã gửi đi (operation + hash, không log toàn văn).</td></tr>
+<tr><td class="k">TB-3</td><td>Backend ↔ Object Storage</td><td>Bucket private tuyệt đối. Truy cập chỉ qua signed URL ngắn hạn do backend cấp sau khi kiểm quyền. Không có URL công khai nào tồn tại.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Actor</h3>
+<ul>
+<li><strong>Learner</strong> — người dùng chính, sở hữu plan và material của mình.</li>
+<li><strong>Curator</strong> — vai trò nội bộ. Seed certification version, publish blueprint, xử lý hàng đợi nội dung bị báo sai. <em>Một tập route riêng dưới <code>/admin</code>, không phải một ứng dụng riêng.</em></li>
+<li><strong>System</strong> — worker chạy job; hành động của nó luôn quy được về một plan và ghi vào cost ledger.</li>
+</ul>
+</section>
+
+<section id="s2">
+<h2 class="sec"><i>02</i>Domain Model</h2>
+<p class="kicker">Bảy aggregate. Mỗi cái có một invariant thật sự cần bảo vệ.</p>
+
+<div class="flow">CATALOG (curated · dùng chung · read-only lúc runtime)
+  CertificationVersion ─┬─ ExamDomain ── TaskStatement ── KnowledgeItem
+                        └─ OfficialResource
+                        ⟨ mọi field factual ⟩ ──▶ SourceRef
+
+MATERIAL (riêng tư · theo user)
+  Material ── MaterialRevision[]         ← MỖI LẦN XỬ LÝ LÀ MỘT REVISION
+                ├─ MaterialPage[]        ← text đã trích, wordCount, imageRatio
+                ├─ CourseSection (cây)   ← DERIVED
+                │     └─ CourseTopic     ← DERIVED
+                ├─ LearningUnit[]        ← DERIVED · cert-agnostic · plan-agnostic
+                └─ MaterialTermIndex[]   ← inverted index deterministic
+
+MAPPING (lớp phụ thuộc chứng chỉ · tái sử dụng được cho cert khác)
+  UnitExamMapping    LearningUnit ⟷ TaskStatement + relevance + confidence
+  CoverageAssessment TaskStatement → COVERED | PARTIAL | NOT_COVERED
+  ⟨ khoá theo materialRevision × certificationVersion × mappingVersion ⟩
+
+PLAN (aggregate root của hành trình học)
+  StudyPlan ─┬─ PlanUnit[]          ← trạng thái CỦA PLAN trên một LearningUnit
+             │                        (thứ tự, effort hiệu dụng, depth, đã biết)
+             ├─ StudyDay[]          ← NGÀY NÀO
+             │     └─ StudyDayItem[] ← xếp PlanUnit vào ngày · replan chỉ ghi ở đây
+             └─ PlanAdjustment[]    ← nhật ký kiểm toán
+
+LEARNING (nội dung sinh ra)
+  LearningPack (plan × unit) ── ContentBlock[] ──▶ sourceSpan / page range
+  GlossaryEntry (theo plan)
+
+ASSESSMENT
+  Question (bank theo plan) ──▶ sourceSpan + taskStatement bắt buộc
+  QuizAttempt ── AttemptQuestion[]
+  TopicMastery (plan × topic)</div>
+
+<div class="callout rule">
+<span class="lab">A1 — Ba lớp tách biệt, không phải hai</span>
+<p>Bản rev 1 gộp quá nhiều thứ vào <code>LearningUnit</code>. Mô hình đúng có <strong>ba lớp</strong>, mỗi lớp có vòng đời riêng:</p>
+<div class="flow" style="margin:10px 0;background:transparent;border:0;padding:0;border-left:0">LearningUnit      ← dẫn xuất từ MaterialRevision · KHÔNG biết gì về chứng chỉ
+   materialRevisionId · sequence · title · pageStart–pageEnd
+   baseEffortMinutes · contentHash
+   ổn định qua replan · ĐỔI khi material được xử lý lại (revision mới)
+
+UnitExamMapping   ← lớp phụ thuộc chứng chỉ
+   learningUnitId · certificationVersionId · taskStatementId
+   relevance · confidence · mappingVersion
+   cùng một unit map được sang chứng chỉ khác mà không phải dựng lại unit
+
+PlanUnit          ← trạng thái riêng của một plan
+   planId · learningUnitId · orderIndex · effectiveEffortMinutes
+   depthFlag · markedKnown · resolvedRelevance
+   đây là nơi chứa quyết định của người dùng và của scheduler</div>
+<p><strong>Vì sao <code>relevance</code> phải rời khỏi LearningUnit:</strong> độ liên quan là thuộc tính của <em>cặp</em> (unit, chứng chỉ), không phải của unit. Để nó trong unit là khoá cứng material vào một chứng chỉ và phá hỏng khả năng tái dùng — đúng điều A1 chỉ ra.</p>
+<p><strong>Vì sao effort tách làm hai:</strong> <code>baseEffortMinutes</code> tính từ trang/từ/độ khó (cert-agnostic); <code>effectiveEffortMinutes</code> = base × weightMul(domain weight từ mapping) × depthFlag — chỉ tồn tại ở tầng plan.</p>
+<p><strong>Bất biến ở đâu:</strong> replan <em>chỉ</em> ghi <code>StudyDayItem</code>, không bao giờ sinh lại hay sửa <code>LearningUnit</code> đang được tham chiếu → LearningPack vẫn hợp lệ → <strong>replan tốn $0 chi phí AI</strong>. Còn khi material được xử lý lại, hệ thống tạo <code>MaterialRevision</code> mới với bộ LearningUnit mới; unit cũ vẫn tồn tại cho những ngày đã học xong.</p>
+</div>
+
+<h3>Xử lý lại tài liệu — MaterialRevision</h3>
+<div class="flow">Material (định danh ổn định · file gốc)
+  └── MaterialRevision  revisionNo · sourceContentHash · extractionVersion
+                        structureVersion · structureHash · status
+        └── MaterialPage[] · CourseSection[] · CourseTopic[] · LearningUnit[]
+
+Tạo revision mới khi:
+  · người dùng upload lại / thay file
+  · người dùng sửa ranh giới section thủ công
+  · nâng cấp extractionVersion hoặc structureVersion của hệ thống
+
+Plan đang ACTIVE trỏ tới MỘT revision. Chuyển sang revision mới là hành động
+có chủ đích, hiển thị diff, và KHÔNG đụng tới ngày đã COMPLETED.</div>
+
+<h3>Invariant theo aggregate</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Aggregate</th><th>Invariant bắt buộc</th><th>Cưỡng chế ở đâu</th></tr></thead>
+<tbody>
+<tr><td class="k">CertificationVersion</td><td>Tổng <code>weightPercent</code> các domain = 100 · mọi TaskStatement thuộc đúng một Domain · mọi field factual có SourceRef · bất biến sau khi PUBLISHED</td><td>Kiểm tra lúc publish trong catalog module + CHECK constraint</td></tr>
+<tr><td class="k">Material</td><td>Page range của các section liên tục, không chồng lấn, phủ hết <code>[1..pageCount]</code></td><td>Validator sau tầng STRUCTURE (mục 05)</td></tr>
+<tr><td class="k">StudyPlan</td><td>Không StudyDay nào sau <code>examDate</code> · không rơi vào blocked date · tổng phút mỗi ngày ≤ capacity × 1.15 · <strong>ngày COMPLETED bất biến</strong> · mỗi PlanUnit xuất hiện tối đa một lần trong toàn bộ lịch · mọi PlanUnit trỏ tới LearningUnit thuộc đúng MaterialRevision mà plan đang pin</td><td><code>PlanInvariants.validate()</code> chạy trước mọi lần ghi; vi phạm → ném lỗi, không bao giờ persist lịch sai</td></tr>
+<tr><td class="k">LearningPack</td><td>Mọi ContentBlock có <code>origin</code>; block <code>FROM_MATERIAL</code> phải có page range nằm trong unit</td><td>Validator sau khi AI trả về, trước khi ghi</td></tr>
+<tr><td class="k">Question</td><td><code>sourceSpan</code> khác rỗng · <code>taskStatementId</code> thuộc blueprint đang pin · đúng số đáp án đúng theo loại</td><td>Pipeline validate (mục 06) — sai thì <em>loại câu hỏi</em>, không sửa</td></tr>
+<tr><td class="k">TopicMastery</td><td>Tính lại được hoàn toàn từ AnswerRecord</td><td>Có lệnh recompute; mastery là cache, không phải nguồn sự thật</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+<span class="lab">Cảnh báo: StudyPlan là aggregate lớn</span>
+<p>Một plan 90 ngày có thể có ~200 LearningUnit và ~300 StudyDayItem. Nạp toàn bộ để replan là chấp nhận được vì replan là thao tác <em>một người dùng, không thường xuyên</em> (vài lần mỗi tuần). Không tối ưu sớm. Điều kiện phải xem lại: nếu replan vượt 500ms p95, tách read model riêng cho scheduler.</p>
+</div>
+</section>
+
+<section id="s3">
+<h2 class="sec"><i>03</i>Module Boundaries</h2>
+<p class="kicker">Bảy module domain, sáu module platform. Phụ thuộc một chiều, cưỡng chế bằng test.</p>
+
+<div class="flow">app/                        bootstrap · web adapter · admin route · config
+│
+├── domain/
+│   ├── identity            account · auth · session
+│   ├── catalog             certification · blueprint · provenance · resource
+│   ├── material            upload · page · section · topic · term index
+│   ├── mapping             topic ⟷ task statement · coverage
+│   ├── planning            learning unit · effort · scheduler · replanner · day
+│   ├── learning            learning pack · content block · glossary
+│   └── assessment          question bank · validate · attempt · grading · mastery
+│
+├── platform/
+│   ├── ai                  LlmPort · operation registry · structured output
+│   │                       validation · retry · COST LEDGER
+│   ├── jobs                job table · worker · idempotency · backoff
+│   ├── storage             ObjectStoragePort
+│   ├── parsing             DocumentParserPort (PDF · PPTX)
+│   ├── observability       logging · metrics · analytics event
+│   └── security            authn · authz · rate limit
+│
+└── shared/                 SourceRef · ContentBlock · ExamRelevance
+                            typed ids · Result<T>
+
+
+CHIỀU PHỤ THUỘC (không có chu trình)
+
+  assessment ──┬──▶ learning ──┬──▶ planning ──▶ mapping ──▶ material ──▶ catalog
+               └───────────────┴──────────────────────────────────────────▶ shared
+
+  mọi domain module ──▶ platform.*        platform KHÔNG BAO GIỜ ──▶ domain</div>
+
+<h3>Quy tắc giao tiếp</h3>
+<ul>
+<li>Mỗi module xuất <strong>đúng một facade</strong> (<code>MaterialFacade</code>, <code>PlanningFacade</code>…). Nội bộ package là <code>internal</code>, Modulith chặn truy cập chéo.</li>
+<li>Giao tiếp đồng bộ giữa domain module = gọi facade trực tiếp trong cùng transaction. <strong>Không dùng event bus cho việc deterministic</strong> — nó chỉ thêm indirection cho 1 dev.</li>
+<li>Giao tiếp bất đồng bộ = <strong>ghi một job trong cùng transaction</strong> với thay đổi trạng thái (transactional outbox, mục 10). Đây là cơ chế bắt buộc duy nhất, và nó xử lý mọi thứ chạm tới AI hoặc I/O chậm.</li>
+<li>DTO qua ranh giới module là record bất biến trong <code>shared</code> hoặc trong API của module xuất.</li>
+</ul>
+
+<div class="callout rule">
+<span class="lab">Cưỡng chế bằng test — không phải bằng lời hứa</span>
+<div class="flow" style="margin:8px 0 0;background:transparent;border:0;padding:0;border-left:0">ArchUnit rules (chạy trong CI, fail build):
+
+R1  planning.internal.scheduler   ─╳─▶  platform.ai
+R2  assessment.internal.grading   ─╳─▶  platform.ai
+R3  assessment.internal.mastery   ─╳─▶  platform.ai
+R4  platform.*                    ─╳─▶  domain.*
+R5  không module nào ──▶ *.internal của module khác
+R6  không class nào ngoài platform.ai được import SDK của LLM provider
+R7  không chu trình phụ thuộc giữa các module</div>
+<p style="margin-top:12px">R1–R3 là bản dịch trực tiếp của nguyên tắc sản phẩm "LLM không sở hữu ràng buộc nghiệp vụ" thành một <em>ràng buộc biên dịch được kiểm tra</em>. Không có chúng, nguyên tắc sẽ bị vi phạm ở tuần thứ năm khi thấy tiện tay.</p>
+</div>
+
+<h3>Bản đồ module ↔ năng lực MVP</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Năng lực</th><th>Module chính</th><th>Module phụ thuộc</th></tr></thead>
+<tbody>
+<tr><td class="k">M1 Setup + Capacity Check</td><td>planning</td><td>identity · catalog</td></tr>
+<tr><td class="k">M2 Hiểu tài liệu</td><td>material</td><td>platform.parsing · platform.ai · platform.jobs</td></tr>
+<tr><td class="k">M3 Map exam scope</td><td>mapping</td><td>material · catalog · platform.ai</td></tr>
+<tr><td class="k">M4 Lập lịch</td><td>planning</td><td>mapping · material</td></tr>
+<tr><td class="k">M5 Learning Pack</td><td>learning</td><td>planning · material · catalog · platform.ai</td></tr>
+<tr><td class="k">M6 Quiz + Final Review</td><td>assessment</td><td>learning · planning · catalog · platform.ai</td></tr>
+<tr><td class="k">M7 Tiến độ + replan</td><td>planning + assessment</td><td>— (thuần deterministic)</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<span class="part">Phần II — Hành vi hệ thống</span>
+
+<section id="s4">
+<h2 class="sec"><i>04</i>Core Flows &amp; State Transitions</h2>
+
+<h3>Tám máy trạng thái</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Thực thể</th><th>Trạng thái</th><th>Ai chuyển</th></tr></thead>
+<tbody>
+<tr><td class="k">Material</td><td class="mono">UPLOADED → EXTRACTING → EXTRACTED → STRUCTURING → READY | FAILED</td><td>Job worker</td></tr>
+<tr><td class="k">StudyPlan</td><td class="mono">DRAFT → ANALYZING → READY_FOR_REVIEW → ACTIVE → COMPLETED | EXPIRED | ABANDONED</td><td>User (DRAFT→ANALYZING, REVIEW→ACTIVE) · worker · cron (EXPIRED)</td></tr>
+<tr><td class="k">StudyDay</td><td class="mono">PLANNED → IN_PROGRESS → COMPLETED | SKIPPED | RESCHEDULED</td><td>User (complete) · replanner (SKIPPED, RESCHEDULED)</td></tr>
+<tr><td class="k">StudyDayItem</td><td class="mono">PENDING → IN_PROGRESS → DONE | CARRIED_FORWARD</td><td>User · replanner</td></tr>
+<tr><td class="k">LearningPack</td><td class="mono">QUEUED → GENERATING → READY | FAILED | FLAGGED</td><td>Job worker · user (FLAGGED qua báo sai)</td></tr>
+<tr><td class="k">QuizAttempt</td><td class="mono">IN_PROGRESS → SUBMITTED → GRADED</td><td>User → grading service (deterministic)</td></tr>
+<tr><td class="k">TopicMastery</td><td class="mono">NOT_STARTED → LEARNING → REVIEW → MASTERED</td><td>Chỉ quy tắc deterministic (Scope §14)</td></tr>
+<tr><td class="k">Job</td><td class="mono">PENDING → RUNNING → SUCCEEDED | FAILED | DEAD</td><td>Worker</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>F1 — Onboarding đến plan ACTIVE</h3>
+<div class="flow">User                    API                      Worker                 AI
+ │                       │                          │                     │
+ ├─ POST /plans ────────▶│ StudyPlan(DRAFT)         │                     │
+ │                       │ ─── không AI ───         │                     │
+ ├─ POST /capacity-check▶│ tính thuần               │                     │
+ │◀── 44h vs 40–60h ─────┤ ◀── &lt; 10 giây ──         │                     │
+ │                       │                          │                     │
+ ├─ POST /materials ────▶│ signed URL               │                     │
+ ├─ PUT (S3 trực tiếp) ─────────────────────────────────────▶ Object Store│
+ ├─ POST /materials/{}/complete                     │                     │
+ │                       │ TX: Material(UPLOADED)   │                     │
+ │                       │   + job MATERIAL_EXTRACT │                     │
+ │                       │ StudyPlan → ANALYZING    │                     │
+ │◀── 202 Accepted ──────┤                          │                     │
+ │                       │                          │                     │
+ │  ┌ poll GET /analysis ──────────────────────────▶│ EXTRACT   (det)     │
+ │  │                                               │ SEGMENT   (det)     │
+ │  │  ◀── "3/12 sections" ──────────────────────── │ STRUCTURE ─────────▶│
+ │  │                                               │ TOPICS    ─────────▶│
+ │  │                                               │ MAP       ─────────▶│
+ │  │                                               │ COVERAGE  (det)     │
+ │  └  ◀── READY_FOR_REVIEW ───────────────────────  │ UNITS+ESTIMATE(det) │
+ │                       │                          │                     │
+ ├─ PATCH /known-topics ▶│ đánh dấu unit known      │                     │
+ ├─ POST /activate ─────▶│ SCHEDULER (hàm thuần)    │                     │
+ │                       │ TX: StudyDay[] + Items   │                     │
+ │                       │   + job GENERATE_PACK D1 │                     │
+ │◀── plan ACTIVE ───────┤                          │ ────────────────────▶│
+ │                       │                          │  pack Ngày 1 sẵn sàng│</div>
+
+<h3>F2 — Vòng lặp hằng ngày và chuỗi hoàn thành ngày</h3>
+<div class="flow">POST /days/{id}/complete
+│
+└─▶ MỘT TRANSACTION, HOÀN TOÀN DETERMINISTIC, &lt; 200ms
+    │
+    ├─ 1  pg_advisory_xact_lock(planId)        ← chống double-submit
+    ├─ 2  StudyDay → COMPLETED (guard: chưa COMPLETED)
+    ├─ 3  item chưa DONE → CARRIED_FORWARD
+    ├─ 4  assessment.recomputeMastery(plan, topics đụng tới hôm nay)
+    ├─ 5  assessment.detectWeakTopics(plan)     → tầng 1 + tầng 2
+    ├─ 6  planning.replan(plan, trigger=DAY_COMPLETED)
+    │        └─ scheduler thuần → StudyDayItem mới + PlanAdjustment[]
+    ├─ 7  PlanInvariants.validate()             ← sai thì rollback toàn bộ
+    ├─ 8  ghi job GENERATE_PACK cho ngày kế (dedup_key)
+    └─ 9  ghi analytics_event(DAY_COMPLETED)
+       COMMIT
+    │
+    └─▶ Worker nhận job → sinh pack ngày mai ở background
+        Người dùng thấy ngay: kết quả + diff lịch + xem trước ngày mai</div>
+
+<div class="callout rule">
+<span class="lab">Vì sao gộp tất cả vào một transaction</span>
+<p>Bước 2–9 đều là logic thuần + ghi DB, không có I/O mạng. Gộp chúng cho ba lợi ích: <strong>không có trạng thái trung gian không nhất quán</strong> (không bao giờ có "ngày đã xong nhưng lịch chưa cập nhật"), <strong>rollback đơn giản</strong> khi invariant bị vi phạm, và <strong>không cần event bus</strong> để nối các bước. Mọi thứ chậm hoặc tốn tiền bị đẩy sang job ở bước 8 — đó là ranh giới duy nhất cần nhớ.</p>
+</div>
+
+<h3>F3 — Đổi ràng buộc &amp; F4 — Xử lý lại tài liệu</h3>
+<ul>
+<li><strong>F3:</strong> <code>PATCH /constraints</code> → cùng một transaction shape như F2, trigger <code>CONSTRAINTS_CHANGED</code>, bỏ bước 2–5. Nếu scheduler trả về <code>Infeasible</code> → <strong>không ghi gì</strong>, trả 409 kèm ba lựa chọn cho người dùng.</li>
+<li><strong>F4:</strong> sửa ranh giới section → chạy lại từ tầng UNITS trở đi (không chạy lại AI vì <code>input_hash</code> của STRUCTURE không đổi). Unit đã có pack và đã DONE được giữ nguyên; chỉ unit chưa học bị dựng lại.</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2 class="sec"><i>05</i>Document Processing Pipeline</h2>
+<p class="kicker">Tám tầng. Mỗi tầng idempotent, có cache theo input hash, có đường lui.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Tầng</th><th>Loại</th><th>Đầu vào → đầu ra</th><th>Khi thất bại</th></tr></thead>
+<tbody>
+<tr><td class="k">S0 UPLOAD</td><td class="tight"><span class="chip c-det">Det</span></td><td>File → storage key + checksum. Kiểm MIME thật (sniff, không tin đuôi file), cap dung lượng, cap số trang, <strong>heuristic chặn exam dump</strong></td><td>Từ chối kèm lý do cụ thể; không tạo Material</td></tr>
+<tr><td class="k">S1 EXTRACT</td><td class="tight"><span class="chip c-det">Det</span></td><td>PDF/PPTX → <code>MaterialPage[]</code>: text, wordCount, imageAreaRatio, font stats, outline/bookmark, PPTX section + speaker notes. PPTX cũng được convert sang PDF cho viewer.</td><td>Material → FAILED, thông báo hành động được ("file bị mã hoá", "file hỏng")</td></tr>
+<tr><td class="k">S2 SEGMENT</td><td class="tight"><span class="chip c-det">Det</span></td><td>Tín hiệu cứng → ranh giới section ứng viên: PDF bookmark, slide layout tiêu đề, mẫu lặp của title, nhảy cỡ chữ</td><td>Không có tín hiệu → danh sách rỗng, S3 tự lo</td></tr>
+<tr><td class="k">S3 STRUCTURE</td><td class="tight"><span class="chip c-ai">AI · FAST</span></td><td><em>Page digest</em> (pageNo + title đoán + ~200 ký tự đầu + wordCount + imageRatio) → cây Section/Subsection có page range</td><td>Retry kèm feedback lỗi (×2) → fallback outline-only → fallback một section phẳng + cờ <code>lowPrecisionStructure</code> + mở UI sửa tay</td></tr>
+<tr><td class="k">S4 TOPICS</td><td class="tight"><span class="chip c-ai">AI · FAST</span></td><td>Section + text → CourseTopic[], keyword[], difficultyTier 1–5</td><td>Fallback: mỗi section = một topic, tier = 3</td></tr>
+<tr><td class="k">S5 MAP</td><td class="tight"><span class="chip c-ai">AI · QUALITY</span></td><td>Topic[] × TaskStatement[] → mapping + confidence + rationale</td><td>Retry → nếu tỉ lệ map &lt; 40% ⇒ cảnh báo "tài liệu có vẻ không khớp chứng chỉ này" (R13)</td></tr>
+<tr><td class="k">S6 COVERAGE</td><td class="tight"><span class="chip c-det">Det</span></td><td>Phép trừ tập hợp trên mapping → COVERED / PARTIAL / NOT_COVERED / EXTRA + GAP_PRIMER unit</td><td>Không thể fail</td></tr>
+<tr><td class="k">S7 UNITS</td><td class="tight"><span class="chip c-det">Det</span></td><td>Section + capacity → LearningUnit[], cắt chỉ tại ranh giới trang</td><td>Không thể fail</td></tr>
+<tr><td class="k">S8 ESTIMATE</td><td class="tight"><span class="chip c-det">Det</span></td><td>Mô hình effort + <strong>chuẩn hoá về capacity</strong> (Scope §08)</td><td>Không thể fail</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Vì sao page digest, không phải toàn văn</h3>
+<div class="flow">Deck 320 trang, toàn văn        ≈  90.000 token   →  đắt, chậm, vượt cửa sổ tốt
+Page digest (S3)                ≈  25.000 token   →  một lần gọi, model FAST
+
+Digest giữ đủ tín hiệu để dựng CẤU TRÚC.
+Toàn văn chỉ cần khi sinh BÀI GIẢNG — và lúc đó chỉ cần 30–60 trang của unit đó.
+
+→ Đây là lý do chi phí phân tích cả khóa &lt; $0.30 thay vì vài đô.</div>
+
+<h3>Idempotency &amp; cache — cơ chế tiết kiệm chi phí cốt lõi</h3>
+<p>Mỗi tầng ghi kết quả kèm khoá <code>(materialId, stage, stageVersion, inputHash)</code>. Chạy lại với cùng <code>inputHash</code> → trả kết quả đã lưu, chi phí 0.</p>
+<div class="flow">inputHash = sha256( stageId ‖ stageVersion ‖ promptVersion ‖ normalize(input) )
+
+Điều này phục vụ đồng thời:
+  · worker crash giữa chừng → chạy lại an toàn
+  · người dùng sửa ranh giới section → chỉ S7–S8 chạy lại
+  · plan thứ hai trên cùng material + cùng cert version → S1–S6 chi phí 0
+  · đổi promptVersion → hash đổi → chủ động sinh lại (có kiểm soát)</div>
+
+<h3>Xuống cấp trung thực</h3>
+<p>Chất lượng trích xuất tính theo trang: <code>extractionQuality = f(wordCount, imageAreaRatio)</code>. Tổng hợp thành <code>qualityFlags</code> ở mức Material, và hiển thị thẳng cho người dùng — không phải một dòng log. Đây là hiện thực hoá cam kết ở Scope §10: <em>"18 trang chủ yếu là sơ đồ — bài giảng phần đó sẽ mỏng hơn."</em></p>
+</section>
+
+<section id="s6">
+<h2 class="sec"><i>06</i>AI / Non-AI Responsibility Boundary</h2>
+<p class="kicker">Ranh giới này phải là cấu trúc code, không phải một quy ước.</p>
+
+<h3>A2 — Định danh artifact: cái gì làm cache hợp lệ</h3>
+<p>Rev 1 định nghĩa tái dùng mapping là <code>material × certificationVersion</code> — quá lỏng. Định danh hiệu dụng phải bao gồm <strong>mọi thứ có thể làm đổi ngữ nghĩa đầu ra</strong>, chia làm hai nhóm:</p>
+<div class="flow">artifactKey = sha256(
+    artifactType
+
+    ── ĐẦU VÀO NGỮ NGHĨA ─────────────────────────────────
+    materialRevisionId          (đã gói sourceContentHash + extractionVersion)
+    structureHash               (cấu trúc dẫn xuất mà unit này thuộc về)
+    learningUnitContentHash
+    certificationVersionId
+    mappingVersion
+
+    ── PHIÊN BẢN SINH ────────────────────────────────────
+    aiOperationId
+    promptVersion
+    outputSchemaVersion
+    modelId
+    modelConfigVersion          (temperature, maxTokens, … — có version riêng)
+)
+
+NGUYÊN TẮC
+  cùng đầu vào ngữ nghĩa + cùng phiên bản sinh  →  TÁI DÙNG
+  bất cứ thứ gì ở trên đổi                      →  SINH ARTIFACT MỚI
+
+Không bao giờ ghi đè. Artifact cũ chuyển SUPERSEDED và giữ lại —
+nó vẫn là nội dung mà người dùng đã thực sự học.
+
+cacheStatus ∈ { VALID · SUPERSEDED · INVALIDATED }
+  INVALIDATED khi content_flag xác nhận nội dung sai  → chặn AR-8
+  (cache không được phép biến một kết quả tồi thành vĩnh viễn)</div>
+
+<h3>A3 — Mọi lời gọi LLM đi qua một cổng, và mọi lần gọi đều tính tiền</h3>
+<div class="callout stop">
+<span class="lab">Sửa lỗi rev 1</span>
+<p>Rev 1 ghi cost ở bước 8, <em>sau</em> khi parse và validate. Sai: một lần parse hỏng hoặc validate hỏng <strong>đã tiêu token của provider rồi</strong>. Ghi sổ sau khi validate nghĩa là mọi lần retry đều vô hình với ngân sách — và ngân sách $5 trở thành vô nghĩa đúng vào lúc chất lượng prompt còn kém, tức là lúc retry nhiều nhất.</p>
+</div>
+<div class="flow">platform.ai.AiGateway.execute(operationId, input) : Result&lt;T&gt;
+
+  1  tính artifactKey → tra cache (cacheStatus = VALID)
+       hit → trả về, KHÔNG gọi provider, cost 0
+                                                        ┌──── vòng retry ────┐
+  2  ĐẶT CHỖ NGÂN SÁCH — nguyên tử                      │                    │
+       UPDATE plan_budget                                │                    │
+         SET reserved_cents = reserved_cents + :est      │                    │
+       WHERE plan_id = :id                               │                    │
+         AND settled_cents + reserved_cents + :est       │                    │
+             &lt;= hard_cap_cents                           │                    │
+       → 0 dòng bị ảnh hưởng = HẾT NGÂN SÁCH, dừng      │                    │
+       → ghi budget_reservation(id, expires_at)          │                    │
+                                                         │                    │
+  3  GỌI PROVIDER (lần thử thứ n)                        │                    │
+                                                         │                    │
+  4  GHI SỔ THỰC TẾ — LUÔN LUÔN, cho MỌI lần gọi        │                    │
+       ai_call_ledger ← tokensIn, tokensOut, costCents,  │                    │
+                        latency, attemptNo, outcome      │                    │
+       settle: reserved -= est ; settled += actual       │                    │
+       ⚠ bước này chạy KỂ CẢ khi 5/6/7 phía dưới hỏng   │                    │
+                                                         │                    │
+  5  parse structured output ──────── hỏng ──────────────┤                    │
+  6  validate JSON schema  ────────── hỏng ──────────────┤ retry có giới hạn  │
+  7  DomainValidator       ────────── hỏng ──────────────┤ (quay lại bước 2   │
+                                                         │  = đặt chỗ mới,    │
+  8  CHỈ CACHE ARTIFACT HỢP LỆ                           │  ghi sổ mới)       │
+                                                         └────────────────────┘
+       hết lượt retry → fallback strategy của operation
+                      → Result.Degraded hoặc Result.Failed
+
+Result.Ok(T)  |  Result.Degraded(T, reason)  |  Result.Failed(reason)</div>
+
+<h4>Ngữ nghĩa đặt chỗ — chống hai worker cùng tiêu một ngân sách</h4>
+<ul>
+<li><strong>Nguyên tử không cần lock tường minh:</strong> một câu <code>UPDATE</code> có mệnh đề guard. Postgres tuần tự hoá các UPDATE trên cùng dòng; worker thứ hai đọc <code>reserved_cents</code> đã tăng. Không có cửa sổ đua.</li>
+<li><strong>Rò rỉ đặt chỗ:</strong> worker chết giữa bước 3 và 4 làm <code>reserved_cents</code> treo. <code>budget_reservation</code> có <code>expires_at</code>; một sweeper giải phóng đặt chỗ hết hạn. Đây là chỗ Stage 3 phải định nghĩa chính xác ngữ nghĩa transaction.</li>
+<li><strong>Ước lượng vs thực tế:</strong> <code>estimatedCostCents</code> khai báo trong AiOperation dùng để đặt chỗ; chênh lệch được quyết toán ở bước 4. Ước lượng nên hơi cao để đặt chỗ mang tính bảo thủ.</li>
+<li><strong>Ngưỡng mềm $5:</strong> không chặn, chỉ ghi cảnh báo + gắn cờ plan. <strong>Ngưỡng cứng $10:</strong> chặn operation không thiết yếu (weakness.explain), xuống cấp operation thiết yếu (pack ngắn hơn, ít câu quiz hơn), và thông báo rõ ràng — không bao giờ im lặng thất bại giữa buổi học.</li>
+</ul>
+
+<h3>Đăng ký operation — mọi tính năng AI là một khai báo</h3>
+<div class="flow">AiOperation {
+  id                    "learning.pack.generate"
+  promptTemplate        resources/prompts/learning-pack.v3.md
+  promptVersion         "v3"                  ─┐
+  outputSchemaVersion   "v2"                   ├─ vào artifactKey (A2)
+  modelTier             QUALITY                │
+  modelConfigVersion    "qual-2026-08"        ─┘
+  inputSchema           PackInput
+  outputSchema          ContentBlockList
+  maxOutputTokens       4000
+  estimatedCostCents    18                    ← dùng để đặt chỗ ngân sách (A3)
+  maxAttempts           3
+  domainValidator       PackValidator          ← phủ MUST_KNOW · trùng n-gram · page range
+  fallback              ShorterPackStrategy
+  cacheable             true
+  essential             true                   ← quyết định hành vi ở ngưỡng cứng
+}</div>
+<p>Lợi ích cho 1 dev: thêm một tính năng AI = thêm một khai báo + một prompt file + một validator. Không đụng vào hạ tầng gọi, retry, đo chi phí, hay cache. Và <strong>mọi tính năng AI tự động có cost tracking</strong> — không thể quên.</p>
+
+<h3>Danh sách operation của MVP</h3>
+<div class="wide">
+<table>
+<thead><tr><th>Operation</th><th class="tight">Tier</th><th class="tight">Cache</th><th>Domain validator</th><th class="tight">Fallback</th></tr></thead>
+<tbody>
+<tr><td class="mono">material.structure.extract</td><td class="tight">FAST</td><td class="tight">✓</td><td>Page range liên tục · không chồng lấn · phủ hết · trang tồn tại</td><td class="tight">Outline → phẳng</td></tr>
+<tr><td class="mono">material.topics.extract</td><td class="tight">FAST</td><td class="tight">✓</td><td>Topic nằm trong page range của section · tier ∈ 1..5</td><td class="tight">1 section = 1 topic</td></tr>
+<tr><td class="mono">mapping.topic.to.task</td><td class="tight">QUALITY</td><td class="tight">✓</td><td>taskStatementId thuộc blueprint · confidence ∈ [0,1]</td><td class="tight">Để chưa map</td></tr>
+<tr><td class="mono">learning.pack.generate</td><td class="tight">QUALITY</td><td class="tight">✓</td><td>Phủ MUST_KNOW · trùng n-gram &lt; ngưỡng · block FROM_MATERIAL có page range hợp lệ · thuật ngữ nhất quán với glossary</td><td class="tight">Pack ngắn hơn</td></tr>
+<tr><td class="mono">assessment.quiz.generate</td><td class="tight">QUALITY</td><td class="tight">✓</td><td>Pipeline 8 kiểm tra (Scope §13) — <strong>loại câu sai, không sửa</strong></td><td class="tight">Giảm số câu</td></tr>
+<tr><td class="mono">assessment.weakness.explain</td><td class="tight">FAST</td><td class="tight">✓</td><td>Độ dài · không đổi điểm số</td><td class="tight">Bỏ qua phần giải thích</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout rule">
+<span class="lab">Ranh giới được cưỡng chế thế nào</span>
+<p>Sáu operation trên là <strong>toàn bộ</strong> bề mặt AI của MVP. Bất kỳ code nào ngoài <code>platform.ai</code> import SDK của provider sẽ làm fail build (ArchUnit R6). Bất kỳ code nào trong <code>planning.scheduler</code>, <code>assessment.grading</code>, <code>assessment.mastery</code> phụ thuộc vào <code>platform.ai</code> cũng làm fail build (R1–R3).</p>
+<p>Kết quả: câu "AI không quyết định lịch và điểm" trở thành một sự thật kiểm chứng được bằng <code>./gradlew test</code>, không phải một dòng trong tài liệu mà tuần thứ năm sẽ quên.</p>
+</div>
+
+<h3>Prompt là tài sản có version, không phải chuỗi trong code</h3>
+<ul>
+<li>Prompt nằm trong <code>resources/prompts/{operation}.{version}.md</code>, load lúc khởi động, <strong>hot-reload ở môi trường dev</strong>.</li>
+<li><code>promptVersion</code> nằm trong <code>inputHash</code> → đổi prompt tự động làm mất hiệu lực cache đúng chỗ cần.</li>
+<li><code>promptVersion</code> được lưu cùng mọi nội dung sinh ra → truy được nội dung nào do prompt nào tạo khi cần điều tra chất lượng.</li>
+<li>Lý do cho D7: chất lượng bài giảng tiếng Việt sẽ cần <strong>hàng chục vòng lặp prompt</strong>. Nếu mỗi vòng cần một lần deploy, ngân sách 6–8 tuần sẽ vỡ ở đây trước tiên.</li>
+</ul>
+
+<h3 style="margin-top:38px">D12 — Definition of Done cho chất lượng nội dung AI</h3>
+<p class="kicker" style="border-bottom:0;padding-bottom:0">Hai cấp đánh giá, cổng cứng, mục tiêu định lượng, và một điều kiện dừng rõ ràng. Đây là câu trả lời cho AR-1: vòng lặp prompt có điểm kết thúc.</p>
+
+<div class="grid2">
+<div class="card">
+<h4>Smoke Eval — dùng trong lúc lặp</h4>
+<ul>
+<li><strong>8 LearningUnit</strong> đại diện</li>
+<li>Chạy sau mỗi lần đổi prompt</li>
+<li>Nhanh, rẻ, không phải cổng phát hành</li>
+<li>Mục đích: bắt hồi quy sớm, không phải chứng nhận</li>
+</ul>
+</div>
+<div class="card">
+<h4>Release Eval — cổng phát hành</h4>
+<ul>
+<li><strong>20–24 LearningUnit</strong> đại diện</li>
+<li>Phủ <strong>mọi domain</strong> của chứng chỉ launch</li>
+<li>Phủ các loại nội dung khác nhau về bản chất (khái niệm · dịch vụ · quy trình · so sánh · slide nhiều sơ đồ)</li>
+<li>Kèm <strong>~80–100 câu quiz</strong> sinh ra</li>
+</ul>
+</div>
+</div>
+
+<h4>Cổng cứng — bất kỳ vi phạm nào cũng chặn phát hành</h4>
+<div class="wide">
+<table>
+<thead><tr><th>Tiêu chí</th><th class="tight">Ngưỡng</th><th>Đo bằng</th></tr></thead>
+<tbody>
+<tr><td class="k">Lỗi factual nghiêm trọng</td><td class="num">= 0</td><td>Người đánh giá đối chiếu blueprint + tài liệu chính thức</td></tr>
+<tr><td class="k"><code>sourceSpan</code> bịa hoặc không phân giải được</td><td class="num">= 0</td><td>Kiểm tự động: span phải khớp text nguồn trong page range</td></tr>
+<tr><td class="k">Câu quiz thiếu <code>sourceSpan</code> hợp lệ</td><td class="num">= 0</td><td>Pipeline validate (đã chặn ở tầng sinh)</td></tr>
+<tr><td class="k">Câu quiz có đáp án chấp nhận SAI</td><td class="num">= 0</td><td>Người đánh giá</td></tr>
+<tr><td class="k">Câu quiz có nhiều đáp án bảo vệ được</td><td class="num">= 0</td><td>Người đánh giá — đây là lỗi phổ biến nhất và khó thấy nhất</td></tr>
+<tr><td class="k">Mâu thuẫn material vs official bị xử theo phía material</td><td class="num">= 0</td><td>Người đánh giá — vi phạm Source Priority (Scope §21)</td></tr>
+<tr><td class="k">Có provenance</td><td class="num">= 100%</td><td>Tự động: mọi block có <code>origin</code>, mọi block FROM_MATERIAL có page range</td></tr>
+<tr><td class="k">Artifact hợp lệ schema sau retry có giới hạn</td><td class="num">≥ 99%</td><td>Tự động từ <code>ai_call_ledger</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Mục tiêu định lượng do người đánh giá (thang 1–5)</h4>
+<div class="wide">
+<table>
+<thead><tr><th>Chiều</th><th class="tight">Mục tiêu</th><th>Ghi chú</th></tr></thead>
+<tbody>
+<tr><td class="k">Độ chính xác factual</td><td class="num">≥ 4.5</td><td>Cao nhất cùng với grounding — sai ở đây là mất niềm tin</td></tr>
+<tr><td class="k">Grounding</td><td class="num">≥ 4.5</td><td>Nội dung suy ra được từ material + blueprint đã cung cấp</td></tr>
+<tr><td class="k">Độ liên quan bài thi</td><td class="num">≥ 4.3</td><td>Nhãn MUST/SHOULD/GOOD đặt đúng chỗ</td></tr>
+<tr><td class="k">Độ trong sáng tiếng Việt</td><td class="num">≥ 4.2</td><td>Người Việt đánh giá; giữ thuật ngữ EN, không dịch cứng</td></tr>
+<tr><td class="k">Tính hữu ích của giải thích</td><td class="num">≥ 4.2</td><td>Bao gồm giải thích vì sao đáp án khác sai</td></tr>
+<tr><td class="k">Chất lượng quiz</td><td class="num">≥ 4.2</td><td>Distractor hợp lý, không lộ bài, đúng độ khó</td></tr>
+<tr><td class="k"><strong>Tỉ lệ pack đạt ngưỡng không cần viết lại tay</strong></td><td class="num">≥ 90%</td><td>Chỉ số tổng hợp quan trọng nhất</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout rule">
+<span class="lab">Điều kiện dừng — và điều kiện mở lại</span>
+<p><strong>Đóng băng promptVersion sau HAI lần chạy Release Eval liên tiếp</strong> đạt toàn bộ cổng cứng và mục tiêu định lượng, không có hồi quy đáng kể.</p>
+<p>Sau khi đóng băng: <strong>ngừng tối ưu prompt theo cảm tính trong suốt MVP.</strong> Đây chính là thứ giữ cho AR-1 không nuốt mất timeline — không có nó, "làm cho hay hơn một chút nữa" sẽ chạy vô hạn.</p>
+<p>Chỉ mở lại vòng lặp khi có <strong>một</strong> trong bốn lý do:</p>
+<ul>
+<li>Khiếm khuyết nghiêm trọng được phát hiện (qua <code>content_flag</code> hoặc báo cáo người dùng)</li>
+<li>Đổi phiên bản chứng chỉ</li>
+<li>Đổi lớp tài liệu (loại tài liệu khác về bản chất so với bộ eval)</li>
+<li>Đổi model / provider, hoặc đo được hồi quy trong eval</li>
+</ul>
+<p>Ba lý do sau đều làm đổi <code>artifactKey</code> theo A2 — nghĩa là <strong>hệ thống tự động sinh lại thay vì phục vụ nội dung cũ</strong>. Cơ chế cache và cơ chế chất lượng khớp với nhau ở đúng chỗ này.</p>
+</div>
+</section>
+
+<section id="s7">
+<h2 class="sec"><i>07</i>Scheduling &amp; Replanning Engine</h2>
+<p class="kicker">Một hàm thuần. Bốn trigger dùng chung một hàm. Đây là phần dễ kiểm thử nhất và không được phép sai.</p>
+
+<div class="flow">SchedulerEngine.plan(PlanningContext) : SchedulingResult
+
+PlanningContext  ── giá trị bất biến, KHÔNG có I/O, KHÔNG có Clock ngầm ──
+  today · examDate · startDate
+  availability: Map&lt;DayOfWeek, Integer&gt;
+  blockedDates: Set&lt;LocalDate&gt;
+  frozenDays: List&lt;StudyDay&gt;              ← ngày đã COMPLETED
+  pendingUnits: List&lt;LearningUnit&gt;        ← có order, effort, relevance, known
+  reviewBlocks: List&lt;ReviewBlock&gt;         ← từ weak topic detection
+  config: reviewWindowRatio, overfillTolerance, compressionLadder
+
+SchedulingResult
+  = Scheduled(days, items, adjustments, droppedUnits)
+  | Infeasible(deficitMinutes, suggestions)      ← KHÔNG BAO GIỜ ghi lịch xấu</div>
+
+<h3>Thuật toán</h3>
+<div class="flow"> 1  availableDays  ← [today .. examDate] trừ blocked, trừ weekday capacity = 0
+ 2  reviewWindow   ← clamp(round(|availableDays| × 0.15), 2, 7) ngày cuối
+ 3  contentDays    ← availableDays − reviewWindow
+ 4  contentCap     ← Σ capacity(contentDays)
+ 5  required       ← Σ effort(pendingUnits chưa known) + Σ effort(reviewBlocks)
+ 6  IF required &gt; contentCap  →  áp THANG NÉN
+ 7  IF required &lt; contentCap × 0.7  →  mở rộng reviewWindow (không bơm phồng bài giảng)
+ 8  BIN-PACK vào contentDays:
+        reviewBlocks luôn xếp ĐẦU ngày mục tiêu
+        đổ unit theo course order tới capacity × 1.15
+        chỉ tách unit khi effort &gt; capacity một ngày, và chỉ tại ranh giới trang
+ 9  lấp reviewWindow: FINAL_REVIEW_EXAM + ôn weak topic theo trọng số domain
+10  sinh PlanAdjustment[] với reason code (chuỗi hiển thị là template, không phải AI)
+11  PlanInvariants.validate()  →  vi phạm thì ném lỗi, KHÔNG persist
+
+THANG NÉN
+  L1  bỏ unit relevance = OPTIONAL
+  L2  bỏ unit relevance = LOW
+  L3  đặt depthFlag = CONDENSED cho MEDIUM   (effort × 0.7 · pack ngắn · ít câu quiz)
+  L4  thu reviewWindow về tối thiểu 2 ngày
+  L5  vẫn không vừa  →  Infeasible(deficit, [tăng giờ, dời ngày thi, chế độ ưu tiên])</div>
+
+<div class="callout rule">
+<span class="lab">Một hàm, bốn trigger</span>
+<p>Bỏ ngày · quiz yếu · đổi ràng buộc · tick đã biết — cả bốn đều gọi <em>cùng một</em> <code>plan()</code> với <code>PlanningContext</code> khác nhau. Không có bốn nhánh replan riêng. Đây là điều giữ cho engine kiểm thử được và giữ cho code base không phình ở tuần thứ sáu.</p>
+</div>
+
+<h3>Kiểm thử — vì sao hàm thuần là quyết định kiến trúc, không phải sở thích</h3>
+<div class="wide">
+<table>
+<thead><tr><th>Loại test</th><th>Nội dung</th></tr></thead>
+<tbody>
+<tr><td class="k">Property (jqwik)</td><td>Với mọi context sinh ngẫu nhiên hợp lệ: không ngày nào vượt <code>capacity × 1.15</code> · không ngày nào sau examDate · không ngày nào rơi vào blocked · ngày frozen không đổi một byte · mỗi pending unit hoặc được xếp đúng một lần, hoặc nằm trong <code>droppedUnits</code> kèm lý do</td></tr>
+<tr><td class="k">Golden case</td><td>Kịch bản AIF-C01 11 ngày (Scope §28) — kết quả lịch được khoá lại làm snapshot; thay đổi ngoài ý muốn sẽ làm fail test</td></tr>
+<tr><td class="k">Biên</td><td>examDate = ngày mai · 0 giờ rảnh mọi ngày · toàn bộ unit đã known · deficit khổng lồ → phải trả <code>Infeasible</code>, không phải lịch rỗng</td></tr>
+<tr><td class="k">Idempotency</td><td><code>plan(ctx)</code> hai lần cho kết quả giống hệt (không có random, không có <code>LocalDate.now()</code> bên trong)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Nhật ký thay đổi và hiển thị diff</h3>
+<p>Mỗi lần replan ghi một <code>PlanAdjustment</code> gồm: <code>trigger</code>, <code>reasonCode</code> (khoá i18n), <code>params</code> (JSON để nội suy vào chuỗi), và một <code>scheduleSnapshot</code> nén của lịch trước đó. Diff hiển thị cho người dùng được tính từ snapshot — không cần bảng lịch sử đầy đủ, và không cần versioning toàn bộ plan.</p>
+<p><em>Vì sao snapshot thay vì immutable plan version:</em> plan version bất biến sạch hơn về khái niệm nhưng nhân đôi lượng ghi và độ phức tạp truy vấn cho một tính năng chỉ dùng để hiển thị "đã đổi gì". Snapshot nén là đủ, và đổi được sau nếu cần audit sâu hơn.</p>
+</section>
+
+<span class="part">Phần III — Hợp đồng &amp; dữ liệu</span>
+
+<section id="s8">
+<h2 class="sec"><i>08</i>Data Model</h2>
+<p class="kicker">Mô hình logic. Chưa phải DDL — đó là việc của Stage 4.</p>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Module</th><th>Bảng</th><th>Cột đáng chú ý</th><th>Ghi chú</th></tr></thead>
+<tbody>
+<tr><td class="k" rowspan="2">identity</td><td class="mono">app_user</td><td>id · email ᵁ · password_hash? · oauth_subject? · locale · created_at · deleted_at</td><td>Soft delete để xoá dữ liệu theo lô</td></tr>
+<tr><td class="mono">refresh_token</td><td>id · user_id · token_hash · expires_at · revoked_at · device_label</td><td>Thu hồi được — cần cho mobile sau này</td></tr>
+
+<tr><td class="k" rowspan="6">catalog</td><td class="mono">certification</td><td>id · provider · name · slug ᵁ</td><td>Generic, không có gì của AWS trong code</td></tr>
+<tr><td class="mono">certification_version</td><td>id · certification_id · exam_code · version_label · effective_from · retired_at? · official_url · exam_guide_url · duration_minutes · question_count · <strong>passing_score NULL</strong> · status · content_hash</td><td>passing_score nullable là chủ ý (Scope §09)</td></tr>
+<tr><td class="mono">exam_domain</td><td>id · certification_version_id · code · title · weight_percent · order_index</td><td>Σ weight = 100, kiểm lúc publish</td></tr>
+<tr><td class="mono">task_statement</td><td>id · exam_domain_id · code · title · order_index</td><td>Đơn vị đo coverage</td></tr>
+<tr><td class="mono">knowledge_item</td><td>id · task_statement_id · text · is_must_know</td><td>Nguồn cho validator phủ MUST_KNOW</td></tr>
+<tr><td class="mono">source_ref</td><td>id · entity_type · entity_id · field · url · doc_title · retrieved_at · content_hash · method · confidence · verified_by · verified_at</td><td>Provenance đa hình cho mọi factual item</td></tr>
+
+<tr><td class="k" rowspan="7">material</td><td class="mono">material</td><td>id · user_id · file_name · mime · size_bytes · storage_key · viewer_key? · source_content_hash · role · page_count · ownership_attested_at</td><td>unique <strong>(user_id, source_content_hash)</strong> — <em>không</em> unique toàn cục (D9)</td></tr>
+<tr><td class="mono">material_revision</td><td>id · material_id · revision_no · source_content_hash · extraction_version · structure_version · structure_hash · status · quality_flags ᴶ · created_at</td><td><strong>A1</strong> — mọi thứ dẫn xuất treo vào đây. unique (material_id, revision_no)</td></tr>
+<tr><td class="mono">material_page</td><td>id · material_revision_id · page_no · text · word_count · image_area_ratio · title_guess · extraction_quality · notes_text</td><td>idx (revision_id, page_no) · <strong>text ở DB, không ở S3</strong></td></tr>
+<tr><td class="mono">course_section</td><td>id · material_revision_id · parent_id? · title · order_index · page_start · page_end · depth</td><td>Cây; invariant phủ hết trang</td></tr>
+<tr><td class="mono">course_topic</td><td>id · course_section_id · title · page_start · page_end · difficulty_tier · keywords ᴶ</td><td>DERIVED — luôn tách khỏi blueprint</td></tr>
+<tr><td class="mono">learning_unit</td><td>id · <strong>material_revision_id?</strong> · origin · sequence · title · page_start? · page_end? · <strong>base_effort_minutes</strong> · content_hash · course_section_id? · course_topic_ids ᴶ · certification_version_id? · task_statement_id?</td><td><strong>A1</strong> — cert-agnostic khi origin=MATERIAL. GAP_PRIMER thì ngược lại: không có revision, có cert+task. <strong>Không còn relevance ở đây.</strong></td></tr>
+<tr><td class="mono">material_term_index</td><td>material_revision_id · term · page_no</td><td>Inverted index deterministic cho glossary</td></tr>
+
+<tr><td class="k" rowspan="2">mapping</td><td class="mono">unit_exam_mapping</td><td>id · <strong>learning_unit_id · certification_version_id · mapping_version</strong> · task_statement_id · <strong>relevance</strong> · confidence · rationale · method · artifact_key</td><td><strong>A1+A2</strong> — relevance sống ở đây. Cùng unit map sang cert khác không phải dựng lại unit.</td></tr>
+<tr><td class="mono">coverage_assessment</td><td>material_revision_id · certification_version_id · mapping_version · task_statement_id · status · evidence ᴶ · computed_at</td><td>Tổng hợp lên mức plan bằng view</td></tr>
+
+<tr><td class="k" rowspan="6">planning</td><td class="mono">study_plan</td><td>id · user_id · certification_version_id · <strong>material_revision_id</strong> · exam_date · start_date · status · daily_capacity ᴶ · blocked_dates ᴶ · compression_mode · effort_ratio · activated_at</td><td>Pin đúng một revision. Một ACTIVE plan / user (partial unique index)</td></tr>
+<tr><td class="mono">plan_unit</td><td><strong>plan_id · learning_unit_id</strong> (PK) · order_index · <strong>effective_effort_minutes</strong> · depth_flag · marked_known · resolved_relevance · status</td><td><strong>A1</strong> — trạng thái riêng của plan. Quyết định của người dùng và scheduler nằm ở đây, không nằm trong LearningUnit dùng chung.</td></tr>
+<tr><td class="mono">study_day</td><td>id · plan_id · date · capacity_minutes · status · started_at · completed_at</td><td>unique (plan_id, date)</td></tr>
+<tr><td class="mono">study_day_item</td><td>id · study_day_id · type · learning_unit_id? · topic_id? · order_index · allotted_minutes · status</td><td><strong>Chỉ bảng này bị replan ghi lại</strong></td></tr>
+<tr><td class="mono">plan_adjustment</td><td>id · plan_id · trigger · reason_code · params ᴶ · schedule_snapshot ᴶ · created_at</td><td>reason_code là khoá i18n, không phải văn bản AI</td></tr>
+<tr><td class="mono">plan_budget</td><td><strong>plan_id (PK)</strong> · hard_cap_cents · soft_cap_cents · settled_cents · reserved_cents · soft_cap_breached_at? · updated_at</td><td><strong>A3</strong> — đặt chỗ nguyên tử bằng UPDATE có guard</td></tr>
+
+<tr><td class="k" rowspan="4">learning</td><td class="mono">learning_pack</td><td>id · <strong>artifact_key ᵁ</strong> · learning_unit_id · certification_version_id · plan_id? · <strong>cache_status</strong> · model · prompt_version · output_schema_version · model_config_version · tokens_in · tokens_out · cost_cents · review_status · superseded_by?</td><td><strong>A2</strong> — <code>artifact_key</code> là định danh duy nhất; không ghi đè, chỉ SUPERSEDED</td></tr>
+<tr><td class="mono">content_block</td><td>id · learning_pack_id · order_index · type · payload ᴶ · origin · source_material_revision_id? · source_page_start? · source_page_end? · source_span? · exam_relevance?</td><td><strong>Hợp đồng chung với frontend và mobile</strong></td></tr>
+<tr><td class="mono">glossary_entry</td><td>id · plan_id · term · first_pack_id · simple_text · technical_text · example_text · exam_note · confusable_with ᴶ</td><td>unique <strong>(plan_id, term)</strong> — không unique toàn cục (D9)</td></tr>
+<tr><td class="mono">content_flag</td><td>id · user_id · block_id? · question_id? · reason · note · created_at · resolved_at · <strong>invalidated_artifact_key?</strong></td><td>Xác nhận sai → set <code>cache_status = INVALIDATED</code> cho đúng key (chặn AR-8)</td></tr>
+
+<tr><td class="k" rowspan="4">assessment</td><td class="mono">question</td><td>id · plan_id · learning_unit_id? · <strong>artifact_key</strong> · type · stem · options ᴶ · correct_option_ids ᴶ · explanation · distractor_rationales ᴶ · task_statement_id · course_topic_id · <strong>source_span</strong> · difficulty · prompt_version · validation_status</td><td>Bank theo plan; <code>source_span</code> NOT NULL</td></tr>
+<tr><td class="mono">quiz_attempt</td><td>id · plan_id · study_day_id? · kind · status · started_at · submitted_at · score_raw · score_total</td><td>kind: DAILY · WARMUP · FINAL_REVIEW</td></tr>
+<tr><td class="mono">attempt_question</td><td>attempt_id · question_id · order_index · selected_option_ids ᴶ · is_correct · answered_at</td><td>Nguồn sự thật cho mastery</td></tr>
+<tr><td class="mono">topic_mastery</td><td>plan_id · course_topic_id · correct_count · total_count · accuracy · mistake_count · sessions_count · last_assessed_at · status</td><td>Cache tính lại được từ attempt_question</td></tr>
+
+<tr><td class="k" rowspan="4">platform</td><td class="mono">job</td><td>id · type · payload ᴶ · <strong>dedupe_key ᵁ</strong> · status · attempts · max_attempts · <strong>available_at</strong> · locked_at? · <strong>lease_expires_at?</strong> · worker_id? · last_error · progress ᴶ · created_at · updated_at · completed_at</td><td><strong>A4</strong> — hai partial index: (status, available_at) cho claim, (status, lease_expires_at) cho quét lease chết</td></tr>
+<tr><td class="mono">budget_reservation</td><td>id · plan_id · operation_id · estimated_cents · <strong>expires_at</strong> · settled_at? · created_at</td><td><strong>A3</strong> — sweeper giải phóng đặt chỗ hết hạn khi worker chết</td></tr>
+<tr><td class="mono">ai_call_ledger</td><td>id · plan_id? · operation_id · <strong>attempt_no</strong> · model · tokens_in · tokens_out · cost_cents · latency_ms · <strong>outcome</strong> · artifact_key · cache_hit · reservation_id? · created_at</td><td><strong>A3</strong> — một dòng cho MỖI lần gọi provider, kể cả lần bị parse/validate loại. <code>outcome ∈ SUCCESS · PARSE_FAIL · SCHEMA_FAIL · DOMAIN_FAIL · PROVIDER_ERROR</code></td></tr>
+<tr><td class="mono">analytics_event</td><td>id · user_id? · plan_id? · type · props ᴶ · created_at</td><td>Đo success criteria của Scope §27</td></tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:13.5px;color:var(--muted);font-family:var(--sans)">ᵁ unique &nbsp;·&nbsp; ᴶ JSONB &nbsp;·&nbsp; ? nullable</p>
+
+<div class="callout rule">
+<span class="lab">D9 — Không thêm organization_id, nhưng giữ mô hình dễ migrate</span>
+<p>Một cột tenant nullable không giải quyết được multi-tenancy thật (cần membership, ownership rules, authorization, cô lập dữ liệu, ràng buộc theo tenant) — nó chỉ tạo cảm giác đã chuẩn bị. Thay vào đó, bốn nguyên tắc giữ cho mô hình <em>migrate được</em> khi B2B trở thành cam kết thật:</p>
+<ul>
+<li><strong>Surrogate ID ở mọi nơi</strong> — không dùng khoá tự nhiên làm PK.</li>
+<li><strong>Ownership không nằm trong primary key</strong> — <code>plan_unit</code> dùng PK tổ hợp (plan_id, learning_unit_id) là quan hệ, không phải mã hoá quyền sở hữu; mọi bảng khác dùng surrogate id.</li>
+<li><strong>Authorization tập trung</strong> — <code>PlanAccessGuard</code> ở tầng service là điểm duy nhất quyết định "ai được đọc cái gì". Thêm một chiều tenant về sau là sửa một chỗ, không phải rải khắp controller.</li>
+<li><strong>Không giả định dữ liệu người dùng là duy nhất toàn cục</strong> — đã sửa: <code>material</code> unique theo <em>(user_id, content_hash)</em> chứ không phải content_hash toàn cục; <code>glossary_entry</code> unique theo <em>(plan_id, term)</em>. Hai người upload cùng một file là chuyện bình thường.</li>
+</ul>
+<p>Khi B2B được cam kết, tenancy được thiết kế như <strong>một slice mạch lạc</strong>, không phải một loạt cột nullable rời rạc.</p>
+</div>
+
+<h3>Hợp đồng ContentBlock — điểm nối giữa backend, web và mobile</h3>
+<div class="flow">type ∈ {
+  heading · paragraph · list · keyword · comparison_table
+  relationship_chain · callout_exam · callout_conflict · callout_supplement
+  source_pointer
+}
+
+Mỗi block mang:
+  origin           FROM_MATERIAL | AI_SUPPLEMENT       ← render khác nhau
+  examRelevance?   MUST_KNOW | SHOULD_KNOW | GOOD_TO_KNOW | NOT_REQUIRED
+  sourcePageStart? sourcePageEnd?  sourceSpan?         ← D1 companion: luôn trace được
+
+→ Backend trả typed block, KHÔNG trả HTML hay markdown blob.
+→ Frontend có BlockRenderer registry: type → component.
+→ Mobile sau này dùng lại nguyên hợp đồng, chỉ đổi component.
+→ Thêm một block type mới không đụng vào chỗ nào khác.</div>
+
+<h3>Chỗ đã chừa sẵn cho tương lai — không implement bây giờ</h3>
+<ul>
+<li><strong>Semantic retrieval:</strong> <code>material_page</code> đã addressable theo trang, nên chunk + embed về sau không cần parse lại. Thêm bảng <code>page_chunk_embedding</code> với pgvector là một migration, không phải một dự án.</li>
+<li><strong>B2B (D9):</strong> nếu chốt là "có", thêm <code>organization_id</code> nullable vào <code>app_user</code> và <code>study_plan</code> ngay bây giờ tốn 10 phút; thêm sau tốn một đợt migration trên dữ liệu thật.</li>
+<li><strong>Nhiều material role:</strong> cột <code>role</code> đã tồn tại, chỉ có PRIMARY_COURSE và SUPPLEMENTARY hoạt động.</li>
+</ul>
+</section>
+
+<section id="s9">
+<h2 class="sec"><i>09</i>API Boundaries</h2>
+<p class="kicker">REST/JSON. Hybrid có chủ đích: ghi theo resource, đọc theo view model.</p>
+
+<div class="callout rule">
+<span class="lab">Quyết định hình dạng API</span>
+<p><strong>Ghi = resource-oriented. Đọc = composed view model.</strong></p>
+<p>Màn hình Today cần dữ liệu từ 6 bảng thuộc 4 module. Nếu client tự ghép, thì client đang chứa business logic — vi phạm ràng buộc mobile của D7. Nên <code>GET /today</code> trả về <em>một view model đã ghép sẵn</em>, còn các thao tác ghi vẫn là resource sạch.</p>
+<p>Đây là lợi ích của GraphQL mà không phải nuôi GraphQL: chỉ có ~4 read endpoint dạng view model, số lượng cố định, hợp đồng rõ.</p>
+</div>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">Method</th><th>Đường dẫn</th><th>Ý nghĩa</th><th class="tight">Async</th></tr></thead>
+<tbody>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/auth/{register,login,refresh,logout}</td><td>JWT ngắn hạn + refresh token thu hồi được</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/certifications?q=</td><td>Tìm trong catalog</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/certifications/{versionId}/blueprint</td><td>Domain · task statement · trọng số · SourceRef</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans</td><td>Tạo DRAFT: certVersionId, examDate, availability, blockedDates</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/capacity-check</td><td><strong>Giá trị đầu tiên</strong> — thuần tính toán, &lt;10s, không chạm AI</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/materials</td><td>Khởi tạo upload → trả signed PUT URL + materialId</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/materials/{mid}/complete</td><td>Chốt upload → TX ghi job pipeline → plan ANALYZING</td><td class="tight">202</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/analysis</td><td>Tiến trình phân tích + section đã trích được (để poll)</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/coverage</td><td>Ma trận coverage + danh sách lỗ hổng</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-patch">PATCH</span></td><td class="mono">/api/v1/plans/{id}/known-units</td><td>Tick phần đã biết</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/activate</td><td>Chạy scheduler → ACTIVE. Trả <strong>409 + 3 lựa chọn</strong> nếu Infeasible</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-patch">PATCH</span></td><td class="mono">/api/v1/plans/{id}/constraints</td><td>Đổi examDate / availability / blockedDates → replan</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/today</td><td><strong>View model</strong>: ngày N/M · warm-up · item · trạng thái pack · tiến độ</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/days?from=&amp;to=</td><td>Lịch dạng danh sách/lịch</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/units/{uid}/pack</td><td>ContentBlock[]. <strong>202 kèm status nếu đang sinh</strong></td><td class="tight">202</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/days/{did}/items/{iid}/complete</td><td>Đánh dấu unit xong</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/days/{did}/complete</td><td>Chuỗi F2: mastery → weak → replan → pre-generate</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/plans/{id}/quizzes</td><td>kind = DAILY | WARMUP | FINAL_REVIEW</td><td class="tight">202</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/quizzes/{aid}/answers</td><td>Lưu từng câu (chịu được mất mạng giữa chừng)</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/quizzes/{aid}/submit</td><td>Chấm deterministic → giải thích + vì sao sai</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/plans/{id}/progress</td><td><strong>View model</strong>: theo domain · topic yếu · nhật ký điều chỉnh</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-get">GET</span></td><td class="mono">/api/v1/materials/{mid}/viewer-url?page=</td><td>Signed URL ngắn hạn cho pdf.js</td><td class="tight">—</td></tr>
+<tr><td class="tight"><span class="m m-post">POST</span></td><td class="mono">/api/v1/content-flags</td><td>Báo nội dung sai (block hoặc question)</td><td class="tight">—</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Quy ước</h4>
+<ul>
+<li><strong>Async:</strong> trả <code>202</code> + resource có <code>status</code>; client poll với backoff (TanStack Query). Không WebSocket/SSE trong MVP — thêm hạ tầng cho ba màn hình chờ là không đáng.</li>
+<li><strong>Idempotency:</strong> header <code>Idempotency-Key</code> bắt buộc trên <code>complete</code> và <code>submit</code>.</li>
+<li><strong>Lỗi:</strong> RFC 9457 <code>application/problem+json</code> với <code>code</code> ổn định để client i18n. Không bao giờ trả message tiếng Việt cứng từ backend.</li>
+<li><strong>Version:</strong> <code>/api/v1</code>. Mobile sau này dùng cùng version, không cần BFF riêng.</li>
+<li><strong>Phân quyền:</strong> kiểm ở tầng service (<code>PlanAccessGuard</code>), không chỉ ở controller — để job và admin route cũng đi qua cùng một cổng.</li>
+</ul>
+</section>
+
+<section id="s10">
+<h2 class="sec"><i>10</i>Async Job Architecture</h2>
+<p class="kicker">Hàng đợi trong Postgres. Không broker. Tách được thành process riêng bằng một dòng config.</p>
+
+<div class="flow">GHI JOB — transactional outbox, cùng transaction với thay đổi trạng thái
+
+  BEGIN
+    UPDATE study_day SET status = 'COMPLETED' …
+    INSERT INTO job (type, payload, dedup_key, run_after)
+      VALUES ('GENERATE_PACK', {...}, 'pack:P1:U42:v3', now())
+      ON CONFLICT (dedup_key) DO NOTHING          ← enqueue idempotent
+  COMMIT
+
+  → Không có job mồ côi (rollback thì job cũng biến mất)
+  → Không mất job (commit thì job chắc chắn tồn tại)
+  → Không cần outbox relay riêng vì hàng đợi Ở TRONG cùng DB
+
+
+LẤY JOB — worker pool trong cùng JVM, virtual threads
+
+  UPDATE job
+     SET status = 'RUNNING',
+         attempts = attempts + 1,
+         worker_id = :worker,
+         locked_at = now(),
+         lease_expires_at = now() + :leaseDuration
+   WHERE id IN (
+     SELECT id FROM job
+      WHERE status = 'PENDING' AND available_at &lt;= now()
+      ORDER BY available_at
+        FOR UPDATE SKIP LOCKED
+      LIMIT :batch
+   ) RETURNING *;
+
+  → SKIP LOCKED cho phép nhiều worker song song không tranh chấp
+  → attempts tăng LÚC NHẬN, không phải lúc hỏng → worker chết vẫn đếm
+
+
+PHỤC HỒI LEASE CHẾT — A4, chạy định kỳ
+
+  UPDATE job
+     SET status = CASE WHEN attempts &gt;= max_attempts THEN 'DEAD' ELSE 'PENDING' END,
+         available_at = now() + backoff(attempts),
+         worker_id = NULL, locked_at = NULL, lease_expires_at = NULL,
+         last_error = COALESCE(last_error, 'lease expired')
+   WHERE status = 'RUNNING' AND lease_expires_at &lt; now();
+
+  → worker chết / bị OOM / deploy giữa chừng đều tự phục hồi
+  → job dài (LibreOffice, sinh pack) HEARTBEAT: gia hạn lease_expires_at
+    định kỳ trong lúc chạy, thay vì đặt một lease dài đoán mò
+
+TRẠNG THÁI CUỐI
+  SUCCEEDED   xong
+  DEAD        hết max_attempts — hiện cho admin, và cho người dùng nếu ảnh hưởng họ
+  CANCELLED   plan bị xoá / bị bỏ giữa chừng</div>
+
+<div class="wide">
+<table>
+<thead><tr><th>Job type</th><th>Sinh ra khi</th><th class="tight">Thời lượng</th><th>dedup_key</th></tr></thead>
+<tbody>
+<tr><td class="mono">MATERIAL_PROCESS</td><td>Upload hoàn tất</td><td class="tight">1–4 phút</td><td class="mono">mat:{materialId}</td></tr>
+<tr><td class="mono">PLAN_ANALYZE</td><td>Material READY</td><td class="tight">30–90 giây</td><td class="mono">analyze:{planId}:{matHash}</td></tr>
+<tr><td class="mono">GENERATE_PACK</td><td>Activate plan · hoàn thành ngày</td><td class="tight">20–60 giây</td><td class="mono">pack:{planId}:{unitId}:{promptVer}</td></tr>
+<tr><td class="mono">GENERATE_QUIZ</td><td>Pack READY</td><td class="tight">15–40 giây</td><td class="mono">quiz:{planId}:{dayId}:{promptVer}</td></tr>
+<tr><td class="mono">ASSEMBLE_FINAL_EXAM</td><td>Vào review window</td><td class="tight">&lt; 1 giây</td><td class="mono">final:{planId}</td></tr>
+<tr><td class="mono">RECOMPUTE_MASTERY</td><td>Sửa chữa / thủ công</td><td class="tight">&lt; 1 giây</td><td class="mono">mastery:{planId}:{ts}</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Chi tiết vận hành</h4>
+<ul>
+<li><strong>Progress:</strong> job dài ghi vào cột <code>progress</code> JSONB (<code>{"stage":"STRUCTURE","done":3,"total":12}</code>) để <code>GET /analysis</code> hiển thị section hiện dần — đây là yêu cầu UX từ Scope §07, không phải trang trí.</li>
+<li><strong>Backoff:</strong> <code>run_after = now() + 2^attempts × 30s</code>, jitter ±20%, <code>max_attempts</code> theo loại job (AI: 3, parse: 2).</li>
+<li><strong>Pre-generate có kiểm soát (D6):</strong> tối đa <strong>2 ngày</strong> được sinh trước. Trước khi ghi job GENERATE_PACK, kiểm số pack READY chưa dùng — đủ rồi thì không ghi. Đây là van chặn chi phí, đặt ở tầng enqueue chứ không ở tầng gọi AI.</li>
+<li><strong>Tách process về sau:</strong> worker bật/tắt bằng <code>app.worker.enabled</code>. Chạy cùng JVM hôm nay; deploy một instance thứ hai với <code>worker.enabled=true, api.enabled=false</code> khi cần — <em>không đổi một dòng code</em>.</li>
+<li><strong>Khoá theo plan:</strong> <code>pg_advisory_xact_lock(hash(planId))</code> bao quanh replan và ghi pack, chống hai job cùng plan giẫm lên nhau.</li>
+</ul>
+</section>
+
+<section id="s11">
+<h2 class="sec"><i>11</i>Storage Strategy</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th>Dữ liệu</th><th>Nơi lưu</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td class="k">File gốc (PDF/PPTX)</td><td>Object storage, bucket private, SSE</td><td>Lớn, ghi một lần, đọc hiếm. Key: <code>plans/{planId}/materials/{materialId}/{checksum}</code></td></tr>
+<tr><td class="k">PDF cho viewer (từ PPTX)</td><td>Object storage</td><td>Sinh một lần ở tầng EXTRACT; pdf.js đọc qua signed URL</td></tr>
+<tr><td class="k"><strong>Text đã trích</strong></td><td><strong>PostgreSQL</strong></td><td><strong>Quyết định có chủ đích.</strong> Đây là đường nóng: mỗi lần sinh pack/quiz cần text của 30–60 trang. Để ở S3 thì mỗi lần sinh phải tải + parse lại — thêm độ trễ, thêm chi phí, thêm một điểm hỏng. 320 trang ≈ 200KB text: không đáng để tối ưu.</td></tr>
+<tr><td class="k">Nội dung sinh ra</td><td>PostgreSQL (JSONB payload)</td><td>Cần truy vấn, cần join, cần version theo prompt</td></tr>
+<tr><td class="k">Prompt template</td><td>Resource trong artifact</td><td>Version cùng code; hot-reload ở dev</td></tr>
+<tr><td class="k">Static frontend</td><td>Static host / CDN</td><td>Tách khỏi backend, deploy độc lập</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout rule">
+<span class="lab">Hệ quả tốt của việc tách này</span>
+<p>Vì text đã trích nằm trong DB, <strong>sinh bài giảng không phụ thuộc object storage</strong>. Object storage chỉ cần khả dụng lúc upload và lúc người dùng mở panel slide. Một sự cố S3 làm hỏng panel nhưng <em>không</em> chặn việc học — một tính chất đáng giá cho một hệ thống một người vận hành.</p>
+</div>
+
+<h4>Vòng đời</h4>
+<ul>
+<li>File gốc: giữ khi plan còn hoạt động + 90 ngày sau khi kết thúc.</li>
+<li>Xoá tài khoản → xoá cascade DB + xoá object theo prefix, có job xác nhận.</li>
+<li>Xoá material đơn lẻ (D10, đang mở): mặc định đề xuất — xoá object, giữ pack của ngày đã hoàn thành, panel viewer trả 410 kèm giải thích.</li>
+</ul>
+</section>
+
+<span class="part">Phần IV — Vận hành</span>
+
+<section id="s12">
+<h2 class="sec"><i>12</i>Cost &amp; Observability</h2>
+<p class="kicker">D6 yêu cầu ngân sách và khả năng quan sát chi phí. Đây là thiết kế cụ thể.</p>
+
+<h3>Tám cơ chế kiểm soát chi phí</h3>
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Cơ chế</th><th>Đặt ở đâu</th><th>Tiết kiệm gì</th></tr></thead>
+<tbody>
+<tr><td class="k">C1</td><td>Cache theo <code>artifact_key</code> (A2)</td><td>AiGateway bước 1</td><td>Chạy lại job · retry · replan không đổi ngữ nghĩa → chi phí 0. Chỉ cache artifact đã qua domain validator, và <code>INVALIDATED</code> khi bị báo sai.</td></tr>
+<tr><td class="k">C2</td><td>Tái dùng mapping theo (materialRevision × certVersion × mappingVersion)</td><td>Khoá <code>unit_exam_mapping</code></td><td>Plan thứ hai trên cùng revision + cùng cert: chi phí 0. Cert <em>khác</em>: chỉ phải chạy lại tầng MAP, không phải toàn bộ phân tích (A1)</td></tr>
+<tr><td class="k">C3</td><td><strong>Tách LearningUnit / PlanUnit / StudyDayItem</strong></td><td>Domain model (A1)</td><td><strong>Replan không làm mất hiệu lực pack</strong> — cơ chế lớn nhất</td></tr>
+<tr><td class="k">C4</td><td>Model routing FAST / QUALITY</td><td>Khai báo operation</td><td>Cấu trúc + keyword + giải thích ngắn chạy model rẻ</td></tr>
+<tr><td class="k">C5</td><td>Page digest thay toàn văn ở tầng STRUCTURE</td><td>Pipeline S3</td><td>90k token → 25k token cho phân tích</td></tr>
+<tr><td class="k">C6</td><td>Pre-generate tối đa 2 ngày</td><td>Van ở tầng enqueue</td><td>Người bỏ cuộc ngày 3 không bị sinh 40 pack</td></tr>
+<tr><td class="k">C7</td><td><code>depthFlag = CONDENSED</code> từ thang nén</td><td>Scheduler → prompt</td><td>Unit độ liên quan thấp sinh pack ngắn hơn</td></tr>
+<tr><td class="k">C8</td><td>Kiểm ngân sách trước khi gọi</td><td>AiGateway bước 2</td><td>Chặn cứng ở $10; xuống cấp có kiểm soát thay vì tràn</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Ngân sách ước tính cho AIF-C01 (11 ngày · ~320 slide)</h3>
+<div class="wide">
+<table>
+<thead><tr><th>Operation</th><th class="tight">Số lần</th><th class="tight">Token in</th><th class="tight">Token out</th><th class="tight">Tier</th><th class="tight">Ước tính</th></tr></thead>
+<tbody>
+<tr><td class="k">structure + topics</td><td class="num">2</td><td class="num">30k</td><td class="num">8k</td><td class="tight">FAST</td><td class="num">~$0.10</td></tr>
+<tr><td class="k">mapping</td><td class="num">1</td><td class="num">20k</td><td class="num">6k</td><td class="tight">QUALITY</td><td class="num">~$0.15</td></tr>
+<tr><td class="k">learning packs</td><td class="num">~28</td><td class="num">168k</td><td class="num">84k</td><td class="tight">QUALITY</td><td class="num">~$1.76</td></tr>
+<tr><td class="k">quiz</td><td class="num">11</td><td class="num">44k</td><td class="num">27k</td><td class="tight">QUALITY</td><td class="num">~$0.54</td></tr>
+<tr><td class="k">weakness + misc</td><td class="num">~15</td><td class="num">15k</td><td class="num">8k</td><td class="tight">FAST</td><td class="num">~$0.10</td></tr>
+<tr><td class="k">retry + lần gọi bị loại (~20%)</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="tight">—</td><td class="num">~$0.53</td></tr>
+<tr><td class="k"><strong>Tổng</strong></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="tight">—</td><td class="num"><strong>~$3.18</strong></td></tr>
+</tbody>
+</table>
+</div>
+<p>Nằm trong mục tiêu $5 với biên an toàn ~36%. Dòng "retry + lần gọi bị loại" giờ là <strong>chi phí có thật được ghi sổ</strong> theo A3, không còn là ước lượng vô hình — và trong giai đoạn tinh chỉnh prompt nó có thể cao hơn 20% nhiều. Đây chính là lý do A3 quan trọng: nếu không đếm, ta sẽ tưởng đang ở $2.6 trong khi thực tế là $6.</p>
+<p><strong>Con số này phụ thuộc hoàn toàn vào bảng giá model và độ dài pack thực tế</strong> — spike S4 phải xác nhận trước khi coi đây là ràng buộc. Nếu vượt: đòn bẩy theo thứ tự là C6 (giảm pre-generate xuống 1 ngày), C7 (mở rộng CONDENSED), rồi hạ tier cho pack của unit LOW/MEDIUM.</p>
+
+<h3>Quan sát</h3>
+<div class="grid2">
+<div class="card">
+<h4>Chi phí</h4>
+<ul>
+<li><code>ai_call_ledger</code> — mọi lời gọi, có <code>cache_hit</code> để đo hiệu quả cache</li>
+<li>Rollup theo plan · theo operation · theo ngày</li>
+<li>Cảnh báo khi một plan vượt $5; chặn ở $10</li>
+<li>Bảng giá model trong config, không hard-code</li>
+</ul>
+</div>
+<div class="card">
+<h4>Chất lượng — tín hiệu quan trọng nhất</h4>
+<ul>
+<li><strong>Tỉ lệ validator từ chối</strong> theo operation — dấu hiệu sớm nhất khi prompt suy giảm</li>
+<li>Tỉ lệ <code>content_flag</code> trên block và question (mục tiêu &lt;3% / &lt;5%)</li>
+<li>Tỉ lệ rơi vào fallback</li>
+<li>Tỉ lệ trùng n-gram vượt ngưỡng</li>
+</ul>
+</div>
+<div class="card">
+<h4>Hệ thống</h4>
+<ul>
+<li>Độ sâu hàng đợi và tuổi job cũ nhất</li>
+<li>Độ trễ job theo loại (p50/p95)</li>
+<li>Độ trễ LLM theo operation</li>
+<li>Tỉ lệ job DEAD</li>
+<li>Log JSON có <code>traceId · planId · operationId</code></li>
+</ul>
+</div>
+<div class="card">
+<h4>Sản phẩm — đo Scope §27</h4>
+<ul>
+<li>Phễu onboarding từng bước</li>
+<li><strong>Ngày 1 → Ngày 2 trong 48h</strong> (chỉ số quyết định)</li>
+<li>Số ngày hoàn thành theo cohort</li>
+<li>Tỉ lệ replan có xảy ra khi bỏ ngày</li>
+<li>Bảng <code>analytics_event</code>, không SaaS ngoài</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section id="s13">
+<h2 class="sec"><i>13</i>Failure · Retry · Idempotency</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th>Chế độ hỏng</th><th>Phát hiện</th><th>Xử lý</th><th>Người dùng thấy</th></tr></thead>
+<tbody>
+<tr><td class="k">LLM timeout / 5xx</td><td>AiGateway</td><td>Retry ×3, backoff mũ + jitter</td><td>Không thấy gì (pack sinh trước)</td></tr>
+<tr><td class="k">LLM sai JSON schema</td><td>Bước 6</td><td>Retry ×2 kèm chính lỗi validate làm feedback</td><td>Không thấy gì</td></tr>
+<tr><td class="k">Domain validator từ chối</td><td>Bước 7</td><td>Retry ×1 → fallback strategy của operation</td><td>Pack ngắn hơn / ít câu quiz hơn — có thông báo</td></tr>
+<tr><td class="k">Quiz: 0 câu qua cổng</td><td>Pipeline validate</td><td>Đánh dấu quiz UNAVAILABLE. <strong>Không chặn hoàn thành ngày.</strong></td><td>"Chưa tạo được quiz cho hôm nay. Bạn vẫn hoàn thành ngày được; quiz sẽ được thử lại."</td></tr>
+<tr><td class="k">Parse file thất bại</td><td>Tầng S1</td><td>Material → FAILED, không retry mù</td><td>Lý do cụ thể + cho upload lại</td></tr>
+<tr><td class="k">Structure vi phạm ràng buộc</td><td>Validator S3</td><td>Repair → outline → phẳng + cờ lowPrecision</td><td>Cảnh báo + mở UI sửa ranh giới section</td></tr>
+<tr><td class="k">Mapping &lt; 40%</td><td>Sau S5</td><td>Vẫn tiếp tục nhưng cảnh báo mạnh</td><td>"Tài liệu này có vẻ không khớp chứng chỉ đã chọn"</td></tr>
+<tr><td class="k">Object storage sập</td><td>Storage port</td><td>Upload retry phía client; <strong>sinh pack không bị ảnh hưởng</strong> (text ở DB)</td><td>Panel slide tạm không mở được</td></tr>
+<tr><td class="k">Worker chết giữa job</td><td><code>locked_until</code> hết hạn</td><td>Job quay lại PENDING; idempotent nhờ cache theo input hash</td><td>Chậm hơn một chút</td></tr>
+<tr><td class="k">Double-submit hoàn thành ngày</td><td>Idempotency-Key + guard trạng thái + advisory lock</td><td>Lần hai trả về kết quả lần một</td><td>Không có gì bất thường</td></tr>
+<tr><td class="k">Replan đồng thời</td><td>Advisory lock theo plan</td><td>Tuần tự hoá</td><td>Không có gì bất thường</td></tr>
+<tr><td class="k">Scheduler trả Infeasible</td><td>Bước 11</td><td><strong>Không ghi gì.</strong> 409 + ba lựa chọn</td><td>Thông điệp trung thực trao quyền (Scope §15)</td></tr>
+<tr><td class="k">Invariant bị vi phạm</td><td><code>PlanInvariants</code></td><td>Rollback transaction, log ở mức ERROR, alert</td><td>Lỗi tạm thời, thử lại — <em>tuyệt đối không persist lịch sai</em></td></tr>
+<tr><td class="k">Vượt ngân sách cứng</td><td>AiGateway bước 2</td><td>Từ chối operation không thiết yếu, degrade cái thiết yếu</td><td>Thông báo rõ ràng, không im lặng thất bại</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Ba nguyên tắc idempotency</h4>
+<ol class="body">
+<li><strong>Mọi job idempotent</strong> qua <code>dedup_key</code> lúc ghi và <code>input_hash</code> lúc chạy.</li>
+<li><strong>Mọi API ghi idempotent</strong> qua <code>Idempotency-Key</code> hoặc guard trạng thái tự nhiên (không thể COMPLETE một ngày đã COMPLETED).</li>
+<li><strong>Scheduler là hàm thuần</strong> → chạy lại luôn cho cùng kết quả, nên retry ở bất kỳ tầng nào cũng an toàn.</li>
+</ol>
+</section>
+
+<section id="s14">
+<h2 class="sec"><i>14</i>Security · Copyright · Privacy</h2>
+
+<div class="grid2">
+<div class="card">
+<h4>Xác thực &amp; phân quyền</h4>
+<ul>
+<li>Email + mật khẩu (Argon2id) · tuỳ chọn Google OAuth</li>
+<li>Access token JWT ngắn hạn (15 phút) + refresh token xoay vòng lưu server</li>
+<li><em>Vì sao không JWT thuần:</em> cần thu hồi được (đăng xuất, mất thiết bị) và mobile sẽ cần quản lý phiên theo thiết bị</li>
+<li>Phân quyền <strong>ở tầng service</strong>: <code>PlanAccessGuard</code> — deny by default</li>
+<li>Vai trò CURATOR tách biệt cho <code>/admin</code></li>
+</ul>
+</div>
+<div class="card">
+<h4>An toàn upload</h4>
+<ul>
+<li>Sniff MIME thật, không tin đuôi file</li>
+<li>Cap dung lượng (~200MB) và số trang</li>
+<li>Cổng quét malware (adapter no-op ở MVP, port tồn tại sẵn)</li>
+<li><strong>Heuristic chặn exam dump</strong> là một tầng pipeline có quyền từ chối</li>
+<li>Ghi nhận xác nhận quyền sở hữu: thời điểm + IP</li>
+</ul>
+</div>
+<div class="card">
+<h4>Bản quyền — cưỡng chế bằng code</h4>
+<ul>
+<li><strong>Kiểm trùng n-gram:</strong> shingle 12-gram giữa text sinh ra và text nguồn; vượt ngưỡng → sinh lại với chỉ dẫn chặt hơn → vẫn vượt thì gắn cờ</li>
+<li>Cap độ dài <code>source_span</code> (~50 từ)</li>
+<li>Không có tính năng chia sẻ nào trong MVP — <em>giải quyết phần lớn rủi ro bằng cấu trúc, không bằng chính sách</em></li>
+<li>Không xuất file gốc</li>
+<li>Kênh tiếp nhận yêu cầu gỡ bỏ</li>
+</ul>
+</div>
+<div class="card">
+<h4>Riêng tư</h4>
+<ul>
+<li>Bắt buộc endpoint LLM không train trên dữ liệu + DPA (TB-2)</li>
+<li>Log ghi <em>operation + hash</em>, không ghi toàn văn tài liệu</li>
+<li>Xuất dữ liệu + xoá tài khoản (cascade sang object storage)</li>
+<li>Bucket private, SSE, signed URL ngắn hạn</li>
+<li>Rate limit trên endpoint tốn kém</li>
+<li>Secret qua biến môi trường / secret manager</li>
+</ul>
+</div>
+</div>
+
+<div class="callout stop">
+<span class="lab">Ranh giới không được vượt trong code</span>
+<p>Không endpoint nào cho phép tải file gốc của người dùng khác. Không endpoint nào trả nội dung sinh ra mà thiếu nhãn nguồn gốc. Không đường dẫn nào cho phép một plan đọc material của plan khác. Ba điều này nên có <strong>integration test riêng</strong>, không chỉ code review.</p>
+</div>
+</section>
+
+<section id="s15">
+<h2 class="sec"><i>15</i>Deployment Architecture</h2>
+
+<div class="flow">                    ┌──────────────┐
+   Người dùng ──────▶│ Static host  │  React SPA (Vite build)
+                     │  / CDN       │
+                     └──────┬───────┘
+                            │ REST /api/v1
+                            ▼
+                     ┌──────────────────────────┐
+                     │  MỘT deployable JVM      │
+                     │  Spring Boot fat jar     │
+                     │  ├─ API                  │  app.api.enabled=true
+                     │  └─ Worker pool          │  app.worker.enabled=true
+                     └────┬──────────────┬──────┘
+                          │              │
+              ┌───────────▼──┐    ┌──────▼──────────┐
+              │  PostgreSQL  │    │ Object Storage  │
+              │  (managed)   │    │ (S3-compatible) │
+              │  backup+PITR │    └─────────────────┘
+              └──────────────┘
+
+Container cần thêm: LibreOffice headless (PPTX → PDF)   ← AR-4
+
+MÔI TRƯỜNG
+  local     docker-compose: postgres + minio + app
+  staging   giống production, dữ liệu giả
+  prod      managed Postgres + object storage + 1 app instance
+
+ĐƯỜNG MỞ RỘNG — thiết kế sẵn, KHÔNG dựng bây giờ
+  1  tách worker      → deploy instance thứ hai, đổi 2 flag config
+  2  nhiều API instance → app đã stateless (session ở DB, job ở DB)
+                          ⚠ lúc này rate limit in-memory phải chuyển sang DB/Redis
+  3  read replica     → read model đã tách khỏi aggregate
+  4  semantic search  → pgvector, một migration</div>
+
+<h4>CI/CD cho một dev</h4>
+<ul>
+<li><strong>CI:</strong> build → unit test → <strong>ArchUnit</strong> → integration test (Testcontainers) → kiểm migration chạy sạch từ đầu → build frontend. <em>Không gọi LLM thật.</em></li>
+<li><strong>CD:</strong> một lệnh deploy, migration chạy lúc khởi động (Flyway), health check trước khi nhận traffic.</li>
+<li><strong>Rollback:</strong> giữ artifact trước đó; migration forward-only nên rollback code phải tương thích ngược một version — quy tắc: <em>không xoá cột trong cùng release với việc ngừng dùng nó</em>.</li>
+</ul>
+</section>
+
+<span class="part">Phần V — Rủi ro &amp; chốt</span>
+
+<section id="risks">
+<h2 class="sec"><i>◆</i>Architecture Risks</h2>
+
+<div class="wide">
+<table>
+<thead><tr><th class="tight">#</th><th>Rủi ro</th><th class="tight">Mức</th><th class="tight">K.năng</th><th>Giảm thiểu</th></tr></thead>
+<tbody>
+<tr><td class="k">AR-1</td><td><strong>6–8 tuần là rất sát.</strong> Nút thắt không phải code mà là <em>vòng lặp chất lượng prompt tiếng Việt</em> — đó là thời gian đánh giá, không phải thời gian lập trình, và không rút ngắn được bằng kỹ thuật</td><td><span class="sev hi">Cao</span></td><td><span class="sev hi">Cao</span></td><td>Prompt tách khỏi code, hot-reload ở dev, version hoá · chạy spike S1–S4 ở tuần 0 · <strong>time-box vòng lặp chất lượng và chấp nhận "đủ tốt" cho MVP</strong> · frontend cố ý làm đơn giản</td></tr>
+<tr><td class="k">AR-2</td><td><strong>Chất lượng trích xuất quyết định tất cả.</strong> Nếu S1 cho text kém, mọi tầng phía sau đều kém — và không có kiến trúc nào cứu được</td><td><span class="sev hi">Cao</span></td><td><span class="sev hi">Cao</span></td><td>Spike S1 là điều kiện tiên quyết, không phải tuỳ chọn · UI sửa ranh giới section là van an toàn · cảnh báo trung thực · vision là mục v1.1 đầu tiên</td></tr>
+<tr><td class="k">AR-3</td><td><strong>StudyPlan là aggregate lớn</strong> — replan nạp toàn bộ</td><td><span class="sev md">TB</span></td><td><span class="sev lo">Thấp</span></td><td>Chấp nhận ở quy mô MVP (1 user/lần, vài lần/tuần). Ngưỡng phải xem lại: replan p95 &gt; 500ms → tách read model riêng cho scheduler</td></tr>
+<tr><td class="k">AR-4</td><td><strong>LibreOffice headless</strong> là phụ thuộc runtime nặng nhất: image lớn, chậm khởi động, đôi khi treo</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Chỉ chạy trong job, có timeout cứng + kill · nếu quá phiền: xuống cấp thành "PPTX chỉ xem được dạng text" và giữ panel PDF cho file PDF · <strong>quyết định sau spike S1</strong></td></tr>
+<tr><td class="k">AR-5</td><td><strong>Ước tính chi phí dựa trên giả định.</strong> Bảng $3.18 sụp nếu pack dài gấp đôi dự kiến</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Cost ledger từ ngày đầu · cảnh báo ở $5 · đòn bẩy C6/C7 sẵn sàng · spike S4 xác nhận trước khi khoá D6</td></tr>
+<tr><td class="k">AR-6</td><td><strong>Prompt drift.</strong> Sửa prompt cho unit này làm hỏng unit khác, không ai biết</td><td><span class="sev md">TB</span></td><td><span class="sev hi">Cao</span></td><td>Bộ eval cố định gồm 5–8 unit mẫu từ deck thật · chạy tay trước mỗi lần đổi promptVersion · theo dõi tỉ lệ validator từ chối như tín hiệu sớm</td></tr>
+<tr><td class="k">AR-7</td><td><strong>Job dài + deploy</strong> — deploy giữa lúc job đang chạy</td><td><span class="sev lo">Thấp</span></td><td><span class="sev md">TB</span></td><td>Lease <code>locked_until</code> tự phục hồi · job idempotent · graceful shutdown chờ tối đa 60s</td></tr>
+<tr><td class="k">AR-8</td><td><strong>Cache theo input_hash làm ẩn lỗi</strong> — một kết quả tồi được cache và dùng mãi</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>Chỉ cache kết quả đã qua domain validator · <code>content_flag</code> làm mất hiệu lực cache của đúng hash đó · admin có nút xoá cache theo operation</td></tr>
+<tr><td class="k">AR-9</td><td><strong>Một dev = một điểm hỏng</strong> về tri thức hệ thống</td><td><span class="sev md">TB</span></td><td><span class="sev md">TB</span></td><td>ADR ngắn cho mỗi quyết định kiến trúc · ArchUnit làm tài liệu sống · Modulith sinh sơ đồ module tự động · README chạy được từ zero</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="open">
+<h2 class="sec"><i>◆</i>Open Decisions</h2>
+
+<div class="adr">
+<div class="adr-h"><b>D8</b><span>Hạ tầng triển khai, vùng, ngân sách</span></div>
+<div class="adr-b">
+<dt>Cần gì</dt><dd>Nhà cung cấp (VPS/managed cloud), vùng đặt máy, ngân sách hạ tầng/tháng</dd>
+<dt>Ảnh hưởng</dt><dd>Chọn object storage · độ trễ tới LLM provider · chi phí vận hành. <strong>Nếu người dùng ở VN</strong>, cân nhắc vùng Singapore để giảm RTT.</dd>
+<dt>Đề xuất</dt><dd>Managed Postgres + object storage cùng nhà cung cấp, vùng Singapore. Ước tính $30–60/tháng ở quy mô MVP.</dd>
+</div>
+</div>
+
+<div class="adr">
+<div class="adr-h"><b>D9</b><span>B2B — ĐÃ CHỐT: không thêm cột future-proof</span></div>
+<div class="adr-b">
+<dt>Quyết định</dt><dd><strong>Không thêm <code>organization_id</code> chỉ để phòng xa.</strong> Đề xuất trước của tôi ở rev 1 là sai: một cột tenant nullable không giải quyết được multi-tenancy thật — nó chỉ tạo cảm giác đã chuẩn bị, trong khi thứ thực sự cần là membership, ownership rules, authorization, cô lập dữ liệu và ràng buộc theo tenant.</dd>
+<dt>Thay bằng</dt><dd>Bốn nguyên tắc giữ mô hình migrate được (chi tiết ở mục 08): surrogate ID · ownership không nằm trong PK · authorization tập trung ở <code>PlanAccessGuard</code> · không giả định dữ liệu người dùng duy nhất toàn cục.</dd>
+<dt>Đã sửa</dt><dd><code>material</code> unique theo (user_id, content_hash) thay vì content_hash toàn cục; <code>glossary_entry</code> unique theo (plan_id, term).</dd>
+<dt>Về sau</dt><dd>Khi B2B thành cam kết, tenancy được thiết kế như một slice mạch lạc.</dd>
+</div>
+</div>
+
+<div class="adr">
+<div class="adr-h"><b>D10</b><span>Chính sách xoá file gốc</span></div>
+<div class="adr-b">
+<dt>Cần gì</dt><dd>Xoá material → pack đã sinh xử lý thế nào</dd>
+<dt>Ảnh hưởng</dt><dd>Cascade delete vs giữ lại; ảnh hưởng dữ liệu tiến độ và cảm nhận về quyền sở hữu dữ liệu</dd>
+<dt>Đề xuất</dt><dd>Giữ pack của ngày đã hoàn thành (là hồ sơ học tập và là nội dung đã biến đổi), panel viewer trả 410 kèm giải thích, có hành động "xoá toàn bộ" riêng biệt.</dd>
+</div>
+</div>
+
+<div class="adr">
+<div class="adr-h"><b>D11</b><span>MỚI — LLM provider và bảng giá</span></div>
+<div class="adr-b">
+<dt>Cần gì</dt><dd>Provider cụ thể cho tier FAST và QUALITY</dd>
+<dt>Ảnh hưởng</dt><dd>Toàn bộ ước tính chi phí ở mục 12 · yêu cầu bắt buộc: structured output + chính sách không train + DPA</dd>
+<dt>Đề xuất</dt><dd>Chốt sau spike S4 bằng dữ liệu thật. Kiến trúc đã trung lập với provider (LlmPort + tier logic), nên đây là quyết định vận hành chứ không phải quyết định kiến trúc.</dd>
+</div>
+</div>
+
+<div class="adr">
+<div class="adr-h"><b>D12</b><span>Ngưỡng chất lượng — ĐÃ CHỐT</span></div>
+<div class="adr-b">
+<dt>Quyết định</dt><dd>Hai cấp eval: <strong>Smoke</strong> (8 unit, dùng khi lặp) và <strong>Release</strong> (20–24 unit phủ mọi domain và mọi loại nội dung, kèm 80–100 câu quiz). Tám cổng cứng, bảy mục tiêu định lượng 1–5, và ngưỡng ≥90% pack đạt mà không cần viết lại tay. Chi tiết đầy đủ ở mục 06.</dd>
+<dt>Điều kiện dừng</dt><dd>Đóng băng promptVersion sau <strong>hai lần Release Eval liên tiếp</strong> đạt toàn bộ cổng, không hồi quy. Sau đó <strong>ngừng tối ưu theo cảm tính trong suốt MVP.</strong></dd>
+<dt>Mở lại khi</dt><dd>Khiếm khuyết nghiêm trọng · đổi phiên bản chứng chỉ · đổi lớp tài liệu · đổi model/provider hoặc đo được hồi quy.</dd>
+<dt>Vì sao đủ</dt><dd>Ba lý do mở lại sau cùng đều làm đổi <code>artifactKey</code> theo A2 → hệ thống <em>tự động</em> sinh lại thay vì phục vụ nội dung cũ. Cơ chế chất lượng và cơ chế cache khớp nhau ở đúng chỗ này.</dd>
+</div>
+</div>
+</section>
+
+<section id="gate">
+<div class="gate">
+  <div class="gate-hd"><span>Architecture Review Gate</span><span>Stage 2 → Stage 3</span></div>
+  <div class="gate-bd">
+    <dl>
+      <dt>Recommended architecture</dt>
+      <dd><strong>Modular monolith</strong> Java 21 / Spring Boot, một deployable chứa cả API và worker pool (tách được bằng config), React SPA riêng, PostgreSQL làm cả CSDL nghiệp vụ lẫn hàng đợi job, object storage cho file gốc. Bảy module domain, sáu module platform, phụ thuộc một chiều cưỡng chế bằng ArchUnit.</dd>
+
+      <dt>Technology stack</dt>
+      <dd>Java 21 (virtual threads cho workload I/O-bound) · Spring Boot 3 + Spring Modulith · PostgreSQL 16 (JSONB + SKIP LOCKED + FTS + đường mở pgvector) · Flyway · JPA cho aggregate, SQL cho read model · PDFBox + POI + LibreOffice headless · React 18 + TS + Vite + TanStack Query + pdf.js · JUnit 5 + Testcontainers + ArchUnit + jqwik + Playwright.<br><em>Không dùng:</em> broker · Redis · vector DB · Kubernetes · microservices · Elasticsearch.</dd>
+
+      <dt>Modules</dt>
+      <dd><code>identity · catalog · material · mapping · planning · learning · assessment</code> + platform <code>ai · jobs · storage · parsing · observability · security</code>. Chiều phụ thuộc: assessment → learning → planning → mapping → material → catalog.</dd>
+
+      <dt>Major data model</dt>
+      <dd>29 bảng. Quyết định trung tâm (A1): <strong>ba lớp tách biệt</strong> — <code>learning_unit</code> (dẫn xuất từ <code>material_revision</code>, cert-agnostic) → <code>unit_exam_mapping</code> (relevance sống ở đây, khoá theo certVersion + mappingVersion) → <code>plan_unit</code> (trạng thái riêng của plan) → <code>study_day_item</code> (chỉ bảng này bị replan ghi lại). Nhờ đó replan không làm mất hiệu lực nội dung đã sinh, và cùng một material map sang chứng chỉ khác không phải dựng lại unit. Text đã trích lưu ở Postgres, không ở object storage.</dd>
+
+      <dt>API boundaries</dt>
+      <dd>REST <code>/api/v1</code>. Hybrid có chủ đích: <strong>ghi theo resource, đọc theo view model đã ghép</strong> (<code>/today</code>, <code>/progress</code>) để client không chứa business logic — điều kiện để mobile dùng lại. Async trả 202 + polling. Idempotency-Key trên thao tác ghi quan trọng. RFC 9457 cho lỗi.</dd>
+
+      <dt>AI design</dt>
+      <dd>Sáu <code>AiOperation</code> đã khai báo, tất cả đi qua một <code>AiGateway</code>. Thứ tự đã sửa theo A3: cache theo <code>artifactKey</code> → <strong>đặt chỗ ngân sách nguyên tử</strong> → gọi provider → <strong>ghi sổ chi phí thực tế cho MỌI lần gọi kể cả lần bị loại</strong> → parse → validate schema → validate domain → retry có giới hạn → chỉ cache artifact hợp lệ. <code>artifactKey</code> (A2) gồm đầy đủ đầu vào ngữ nghĩa (materialRevision, structureHash, unitContentHash, certVersion, mappingVersion) và phiên bản sinh (operation, prompt, outputSchema, model, modelConfig). <strong>ArchUnit R1–R3 cấm scheduler, grading và mastery phụ thuộc vào <code>platform.ai</code></strong> — nguyên tắc sản phẩm trở thành ràng buộc kiểm chứng được bằng test.</dd>
+
+      <dt>AI content quality (D12)</dt>
+      <dd>Smoke Eval 8 unit khi lặp; Release Eval 20–24 unit phủ mọi domain + 80–100 câu quiz làm cổng phát hành. Tám cổng cứng ở mức 0 (lỗi factual, sourceSpan bịa, quiz sai đáp án, quiz nhiều đáp án đúng, mâu thuẫn xử theo material) và ≥99% schema-valid, 100% provenance. Bảy mục tiêu 1–5 (factual/grounding ≥4.5). ≥90% pack đạt mà không cần viết lại tay. <strong>Đóng băng prompt sau hai lần Release Eval liên tiếp đạt</strong>; sau đó ngừng tối ưu theo cảm tính trong MVP.</dd>
+
+      <dt>Document processing</dt>
+      <dd>Tám tầng, mỗi tầng idempotent và cache theo <code>input_hash</code>. Ba tầng dùng AI (STRUCTURE, TOPICS, MAP), năm tầng thuần deterministic. Page digest thay toàn văn ở tầng cấu trúc (90k → 25k token). Mọi tầng AI có validator + fallback nhiều bậc, kết thúc bằng xuống cấp trung thực chứ không phải im lặng thất bại.</dd>
+
+      <dt>Search strategy</dt>
+      <dd>Không có tìm kiếm ngoài lúc chạy. Catalog seed offline có provenance. Tra chéo thuật ngữ bằng inverted index deterministic trong Postgres FTS.</dd>
+
+      <dt>RAG decision</dt>
+      <dd><strong>Vector DB is not required for MVP.</strong> Retrieval là structural: <code>Document → Section → LearningUnit → page range / sourceSpan</code>. Không chặn đường bổ sung: text lưu addressable theo trang, retrieval nằm sau một port, và PostgreSQL cho phép thêm pgvector bằng một migration.</dd>
+
+      <dt>Security</dt>
+      <dd>Argon2id + JWT ngắn hạn + refresh token thu hồi được. Phân quyền ở tầng service, deny by default. Upload: sniff MIME, cap kích thước, cổng quét malware, chặn exam dump. Bản quyền cưỡng chế bằng kiểm trùng n-gram 12-gram + cap độ dài trích dẫn + không có tính năng chia sẻ. TB-2 yêu cầu endpoint LLM không train trên dữ liệu.</dd>
+
+      <dt>Testing</dt>
+      <dd>Property test (jqwik) cho scheduler — khả thi vì nó là hàm thuần. Golden snapshot cho kịch bản AIF-C01. Testcontainers cho Postgres thật. ArchUnit trong CI. Fixture đã ghi cho AI — <strong>không gọi LLM thật trong CI</strong>. Bộ eval thủ công 8 unit cho chất lượng nội dung. Ba integration test bảo mật riêng cho các ranh giới không được vượt.</dd>
+
+      <dt>Deployment</dt>
+      <dd>Một JVM (API + worker) + managed Postgres + object storage + static host. Local bằng docker-compose. Bốn đường mở rộng đã thiết kế sẵn nhưng không dựng: tách worker (2 flag config), nhiều API instance, read replica, pgvector.</dd>
+
+      <dt>Architecture risks</dt>
+      <dd><strong>AR-1</strong> timeline 6–8 tuần sát, nút thắt là vòng lặp chất lượng prompt chứ không phải code · <strong>AR-2</strong> chất lượng trích xuất quyết định mọi tầng phía sau · <strong>AR-4</strong> LibreOffice là phụ thuộc nặng nhất · <strong>AR-5</strong> ước tính chi phí $3.18 chưa được xác nhận · <strong>AR-6</strong> prompt drift · <strong>AR-8</strong> cache có thể ẩn lỗi · <strong>AR-9</strong> một dev là điểm hỏng tri thức.</dd>
+
+      <dt>Corrections applied</dt>
+      <dd><strong>A1</strong> ba lớp LearningUnit / UnitExamMapping / PlanUnit, gắn vào MaterialRevision, relevance rời khỏi unit · <strong>A2</strong> artifactKey đầy đủ đầu vào ngữ nghĩa + phiên bản sinh, không ghi đè, có INVALIDATED · <strong>A3</strong> đặt chỗ ngân sách nguyên tử trước khi gọi, ghi sổ mọi lần gọi kể cả lần bị loại · <strong>A4</strong> job có available_at, lease, worker_id, heartbeat, phục hồi lease chết, trạng thái cuối · <strong>D9</strong> không thêm tenant column, thay bằng bốn nguyên tắc migrate-friendly (đã sửa hai giả định unique toàn cục) · <strong>D12</strong> khung eval hai cấp với điều kiện dừng.</dd>
+
+      <dt>Open decisions</dt>
+      <dd><strong>D8</strong> hạ tầng và vùng · <strong>D10</strong> chính sách xoá file gốc · <strong>D11</strong> LLM provider và bảng giá (sau spike S4). Không cái nào chặn việc lập kế hoạch triển khai.<br><em>Stage 3 phải định nghĩa:</em> ngữ nghĩa transaction của đặt chỗ / quyết toán ngân sách (A3).</dd>
+
+      <dt>Ready for implementation planning</dt>
+      <dd><span class="verdict">YES — approved</span><br>Corrections A1–A4, D9, D12 đã áp dụng. Điều kiện vận hành còn lại: chạy spike S1 &amp; S4 trong tuần 0 — kết quả có thể đổi AR-4 (LibreOffice) và hiệu chỉnh D6 (trần chi phí).</dd>
+    </dl>
+  </div>
+</div>
+
+<p class="foot">Stage 2 rev 2 — approved. Chưa có code, chưa có scaffold, chưa có entity, chưa có SQL, chưa có Docker, chưa có CI config. Tiếp theo: <strong>Stage 3 — Implementation Plan</strong>.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function(a){
+    var el = document.querySelector(a.getAttribute('href'));
+    if (el) map[a.getAttribute('href').slice(1)] = a;
+  });
+  if (!('IntersectionObserver' in window)) return;
+  var current = null;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        if (current) current.classList.remove('on');
+        current = map[e.target.id];
+        if (current) current.classList.add('on');
+      }
+    });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+})();
+</script>
